@@ -56,15 +56,97 @@ the Shapefile / GeoPackage / KML bonus formats):
 
 ---
 
-## Folder layout
+## Folder layout (annotated)
+
+Legend: `◀━━` = one of the **4 PDF datasets** · `←` = an **extra** added for fuller coverage.
 
 ```
-data/
-├─ vector/     GeoJSON (polygons + points) + GADM USA GeoPackage
-├─ tabular/    CSV with coordinates
-├─ raster/     GeoTIFF (grayscale, RGB, large ortho) + benchmark/ (byte/int16/float32)
-└─ formats/    Bonus-format sources (Shapefile, GeoPackage, KML)
+📦data
+ ┣ 📂formats
+ ┃ ┣ 📂shapefile
+ ┃ ┃ ┣ 📜ne_110m_admin_0_countries.dbf   ← extra (Shapefile bonus)
+ ┃ ┃ ┣ 📜ne_110m_admin_0_countries.prj   ← extra
+ ┃ ┃ ┣ 📜ne_110m_admin_0_countries.shp   ← extra
+ ┃ ┃ ┗ 📜ne_110m_admin_0_countries.shx   ← extra
+ ┃ ┣ 📜gdal_sample.gpkg                   ← extra (GeoPackage bonus)
+ ┃ ┗ 📜sample.kml                         ← extra (KML bonus)
+ ┣ 📂raster
+ ┃ ┣ 📂benchmark
+ ┃ ┃ ┣ 📜byte_50m.tif       ◀━━ GeoTIFF Benchmark Files
+ ┃ ┃ ┣ 📜float32_50m.tif    ◀━━ GeoTIFF Benchmark Files
+ ┃ ┃ ┗ 📜int16_50m.tif      ◀━━ GeoTIFF Benchmark Files
+ ┃ ┣ 📜cea.tif              ◀━━ OSGeo GeoTIFF Samples
+ ┃ ┣ 📜rgb_byte.tif                       ← extra (multi-band→COG bonus)
+ ┃ ┗ 📜usgs_ortho.tif       ◀━━ OSGeo GeoTIFF Samples
+ ┣ 📂tabular
+ ┃ ┗ 📜cities.csv                         ← extra (CSV→GeoJSON)
+ ┣ 📂vector
+ ┃ ┣ 📜gadm41_USA.gpkg      ◀━━ GADM Global Administrative Areas
+ ┃ ┣ 📜ne_countries.geojson               ← extra (Natural Earth)
+ ┃ ┣ 📜ne_populated_places.geojson        ← extra (Natural Earth points)
+ ┃ ┗ 📜us-states.geojson    ◀━━ World Countries Boundary
+ ┗ 📜README.md                            ← docs
 ```
+
+---
+
+## What each dataset is
+
+**Vector — `vector/` and `tabular/`**
+
+- **`us-states.geojson`** — US state boundary **polygons** (GeoJSON). This is the PDF's
+  "World Countries Boundary" link (it actually points to US states). Drives the vector
+  conversions: CSV export, rasterize, reproject.
+- **`ne_countries.geojson`** — Natural Earth 1:110m **world country polygons**. A true
+  global boundary set, good for world-extent reprojection.
+- **`ne_populated_places.geojson`** — Natural Earth major-city **points**. Used to test
+  exporting point features to CSV.
+- **`gadm41_USA.gpkg`** — GADM v4.1 **US administrative boundaries** (country → state →
+  county) as a GeoPackage. The PDF's GADM dataset (USA chosen).
+- **`cities.csv`** — 10 world cities with `longitude`/`latitude` columns. Hand-made input
+  for **CSV → GeoJSON** (building point features from a spreadsheet).
+
+**Raster — `raster/`**
+
+- **`cea.tif`** — small (514×515) single-band OSGeo test GeoTIFF. Fast to convert, so it is
+  the default for COG / polygonize / reproject testing.
+- **`usgs_ortho.tif`** — a USGS aerial **orthophoto** GeoTIFF (color-mapped). A realistic,
+  larger image for a convincing GeoTIFF → COG demo.
+- **`rgb_byte.tif`** — a 3-band **RGB** GeoTIFF (rasterio's test image). Needed for the
+  multi-band → single-band COG bonus (splitting R/G/B into separate files).
+- **`benchmark/…`** — see the [Benchmark files explained](#benchmark-files-explained) section below.
+
+**Bonus-format sources — `formats/`**
+
+- **`shapefile/ne_110m_admin_0_countries.*`** — a real ESRI **Shapefile**, which is 4 sidecar
+  files that must travel together: `.shp` (geometry), `.shx` (index), `.dbf` (attributes),
+  `.prj` (projection). Tests Shapefile ↔ GeoJSON.
+- **`gdal_sample.gpkg`** — a small OGC **GeoPackage** (a SQLite database of features). Tests
+  GeoPackage ↔ GeoJSON.
+- **`sample.kml`** — a hand-made **KML** (2 points + 1 polygon). Tests KML ↔ GeoJSON.
+
+---
+
+## Benchmark files explained
+
+`raster/benchmark/` holds the PDF's **"GeoTIFF Benchmark Files"** — a packaged set of three
+large GeoTIFFs that are the same size but differ in **pixel data type**:
+
+| File | Pixel type | Typical real-world use |
+|------|-----------|------------------------|
+| `byte_50m.tif` | 8-bit unsigned integer (`uint8`, 0–255) | ordinary imagery / RGB bands |
+| `int16_50m.tif` | 16-bit signed integer (`int16`) | elevation (DEM), temperature |
+| `float32_50m.tif` | 32-bit floating point (`float32`) | scientific / continuous values (NDVI, reflectance) |
+
+- **"50m" means ~50 megapixels** (about 7000×7000 pixels), **not 50 metres**. Each file is ~48 MB.
+- **Why three data types?** A robust GeoTIFF → COG converter must handle each correctly —
+  compression, NoData handling, and overviews all behave differently per type. These files
+  verify that.
+- **Why so large?** They stress-test performance and the **async worker**: big enough that a
+  conversion takes real time, so progress updates and background processing genuinely matter.
+
+> These three files total ~144 MB — the largest part of `data/`. They are optional stress-test
+> inputs; the small `cea.tif` already covers basic GeoTIFF → COG if you ever need to save space.
 
 ---
 

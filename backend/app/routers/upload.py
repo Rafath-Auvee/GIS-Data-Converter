@@ -1,7 +1,16 @@
-"""Upload endpoint: accept a file + conversion config and create a task."""
-from fastapi import APIRouter, File, Form, UploadFile, status
+"""Upload endpoint: accept a file + conversion config, store it, and queue a task."""
+import uuid
 
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from sqlalchemy.orm import Session
+
+from app import validation
+from app.config import settings
+from app.db import get_db
 from app.models.task import ConversionType, UploadAccepted
+from app.models.task_record import TaskRecord
+from app.services import storage
+from app.worker import run_conversion_task
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
@@ -14,6 +23,7 @@ router = APIRouter(prefix="/api", tags=["upload"])
     responses={
         202: {"description": "Task accepted and queued for processing."},
         400: {"description": "Invalid file or unsupported conversion."},
+        413: {"description": "Uploaded file exceeds the size limit."},
     },
 )
 async def upload_file(
@@ -24,20 +34,44 @@ async def upload_file(
     target_epsg: int | None = Form(
         None, description="Target EPSG code (used by reprojection).", examples=[3857]
     ),
+    db: Session = Depends(get_db),
 ):
-    """Accept a geospatial file and conversion config, then queue a task.
+    """Validate the upload, store it in MinIO, create a task, and dispatch the worker."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided.")
 
-    Example (curl):
+    try:
+        validation.validate_extension(conversion.value, file.filename)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        curl -F "file=@us-states.geojson" \\
-             -F "conversion=geojson_to_csv" \\
-             http://localhost:8000/api/upload
+    data = await file.read()
+    limit = settings.max_upload_size_mb * 1024 * 1024
+    if len(data) > limit:
+        raise HTTPException(
+            status_code=413,
+            detail=(
+                f"File is {len(data) // (1024 * 1024)} MB; "
+                f"limit is {settings.max_upload_size_mb} MB."
+            ),
+        )
 
-    TODO (Step 2):
-      - validate file extension / format against the requested conversion
-      - stream the upload into MinIO
-      - create a Task record with status=pending
-      - dispatch the Celery convert job
-      - return the task id
-    """
-    raise NotImplementedError("Upload handling is wired up in Step 2.")
+    task_id = str(uuid.uuid4())
+    input_key = f"inputs/{task_id}/{file.filename}"
+    storage.put_bytes(data, input_key)
+
+    task = TaskRecord(
+        id=task_id,
+        status="pending",
+        conversion=conversion.value,
+        source_filename=file.filename,
+        target_epsg=target_epsg,
+        input_key=input_key,
+        progress=0,
+    )
+    db.add(task)
+    db.commit()
+
+    run_conversion_task.delay(task_id)
+
+    return UploadAccepted(task_id=task_id, status="pending")

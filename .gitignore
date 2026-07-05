@@ -28,3 +28,5 @@ backend/outputs/
 # --- OS ---
 .DS_Store
 Thumbs.db
+
+GIS_Data_Converter_MiniProject.pdf

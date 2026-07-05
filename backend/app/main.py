@@ -2,18 +2,41 @@
 
 Exposes the upload / task / download API and auto-generated OpenAPI docs at /docs.
 """
+import time
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.db import Base, engine
 from app.routers import download, tasks, upload
+from app.services import storage
 
-# Groups shown in the Swagger UI (/docs), each with a short description.
 tags_metadata = [
     {"name": "upload", "description": "Upload a geospatial file and start a conversion job."},
     {"name": "tasks", "description": "Check conversion task status and fetch result metadata."},
     {"name": "download", "description": "Download the converted output file."},
     {"name": "system", "description": "Service health checks."},
 ]
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.models import task_record
+
+    Base.metadata.create_all(bind=engine)
+
+    for attempt in range(10):
+        try:
+            storage.ensure_bucket()
+            break
+        except Exception:
+            if attempt == 9:
+                raise
+            time.sleep(2)
+
+    yield
+
 
 app = FastAPI(
     title="GIS Data Converter",
@@ -26,9 +49,9 @@ app = FastAPI(
     version="0.1.0",
     license_info={"name": "MIT"},
     openapi_tags=tags_metadata,
+    lifespan=lifespan,
 )
 
-# Open CORS for local frontend development (tighten before any real deployment).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

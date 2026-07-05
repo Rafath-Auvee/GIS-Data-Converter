@@ -1,0 +1,64 @@
+"""Lightweight upload validation: extensions, GeoJSON structure, GeoTIFF integrity."""
+import json
+from pathlib import Path
+
+ALLOWED_EXTENSIONS: dict[str, set[str]] = {
+    "geojson_to_csv": {".geojson", ".json"},
+    "csv_to_geojson": {".csv"},
+    "geotiff_to_cog": {".tif", ".tiff"},
+    "raster_to_geojson": {".tif", ".tiff"},
+    "geojson_to_raster": {".geojson", ".json"},
+    "reproject": {".geojson", ".json", ".gpkg", ".kml", ".tif", ".tiff"},
+}
+
+_GEOJSON_TYPES = {
+    "FeatureCollection",
+    "Feature",
+    "Point",
+    "MultiPoint",
+    "LineString",
+    "MultiLineString",
+    "Polygon",
+    "MultiPolygon",
+    "GeometryCollection",
+}
+
+
+def validate_extension(conversion: str, filename: str) -> str:
+    """Check the file extension is accepted for the requested conversion."""
+    ext = Path(filename).suffix.lower()
+    allowed = ALLOWED_EXTENSIONS.get(conversion, set())
+    if ext not in allowed:
+        raise ValueError(
+            f"File type '{ext}' is not accepted for '{conversion}'. "
+            f"Expected one of: {', '.join(sorted(allowed))}."
+        )
+    return ext
+
+
+def validate_geojson(path: Path) -> None:
+    """Minimal RFC 7946 structural check."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        raise ValueError(f"Not valid JSON: {e}") from e
+    if not isinstance(data, dict) or data.get("type") not in _GEOJSON_TYPES:
+        raise ValueError("Not a valid GeoJSON object (missing or unknown 'type').")
+    if data["type"] == "FeatureCollection" and not isinstance(data.get("features"), list):
+        raise ValueError("GeoJSON FeatureCollection is missing a 'features' array.")
+
+
+def validate_geotiff(path: Path) -> None:
+    """Ensure the GeoTIFF is readable and has raster bands + CRS metadata."""
+    import rasterio
+
+    try:
+        with rasterio.open(path) as ds:
+            if ds.count < 1:
+                raise ValueError("GeoTIFF has no raster bands.")
+            _ = ds.crs
+    except ValueError:
+        raise
+    except Exception as e:
+        raise ValueError(f"Could not read GeoTIFF: {e}") from e
