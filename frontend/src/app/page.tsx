@@ -42,7 +42,6 @@ export default function Home() {
     onSuccess: (res) => setTaskId(res.task_id),
   });
 
-  // Poll the task status once we have a task id, until it finishes.
   const task = useQuery<Task>({
     queryKey: ["task", taskId],
     queryFn: () => getTask(taskId as string),
@@ -71,7 +70,6 @@ export default function Home() {
         </p>
       </header>
 
-      {/* Upload area */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -106,7 +104,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Configuration */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">Conversion</span>
@@ -147,14 +144,12 @@ export default function Home() {
         {upload.isPending ? "Uploading…" : "Convert"}
       </button>
 
-      {/* Errors */}
       {upload.isError && (
         <p className="mt-4 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600">
           {(upload.error as Error).message}
         </p>
       )}
 
-      {/* Status + progress */}
       {taskId && (
         <section className="mt-8 rounded-xl border border-black/10 p-5 dark:border-white/15">
           <div className="flex items-center justify-between">

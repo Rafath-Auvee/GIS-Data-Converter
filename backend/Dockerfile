@@ -5,9 +5,6 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# The geo libraries (rasterio, fiona, shapely, pyproj) ship manylinux wheels that
-# bundle their own GDAL/GEOS/PROJ, so no system GDAL install is needed. curl is
-# kept for container healthchecks / debugging.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       curl \
     && rm -rf /var/lib/apt/lists/*

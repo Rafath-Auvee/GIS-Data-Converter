@@ -1,6 +1,3 @@
-// Typed client for the GIS Data Converter backend API.
-// Mirrors the FastAPI schemas in backend/app/models/task.py.
-
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export type TaskStatus = "pending" | "processing" | "completed" | "failed";
@@ -39,7 +36,6 @@ export interface TaskResult {
   download_url: string | null;
 }
 
-/** Human-readable labels for the conversion dropdown. */
 export const CONVERSIONS: { value: ConversionType; label: string }[] = [
   { value: "geojson_to_csv", label: "GeoJSON → CSV" },
   { value: "csv_to_geojson", label: "CSV → GeoJSON" },
@@ -56,7 +52,7 @@ async function unwrap<T>(res: Response): Promise<T> {
       const body = await res.json();
       detail = body?.detail ?? detail;
     } catch {
-      // response had no JSON body
+      detail = res.statusText;
     }
     throw new Error(`${res.status} — ${detail}`);
   }
@@ -86,7 +82,6 @@ export async function getTaskResult(taskId: string): Promise<TaskResult> {
   return unwrap<TaskResult>(await fetch(`${API_URL}/api/tasks/${taskId}/result`));
 }
 
-/** Direct download URL for a completed task's output file. */
 export function downloadUrl(taskId: string): string {
   return `${API_URL}/api/download/${taskId}`;
 }

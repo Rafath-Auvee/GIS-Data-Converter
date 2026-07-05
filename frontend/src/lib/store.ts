@@ -1,4 +1,3 @@
-// Zustand store for converter UI state.
 import { create } from "zustand";
 import type { ConversionType } from "./api";
 

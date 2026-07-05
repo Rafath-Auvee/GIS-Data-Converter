@@ -27,8 +27,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # web console
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - miniodata:/data
 
@@ -62,22 +62,14 @@ services:
     build: ./frontend
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - WATCHPACK_POLLING=true       # reliable HMR file-watching on Windows/Docker
+      - WATCHPACK_POLLING=true
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - /app/node_modules            # keep the image's Linux node_modules, not the host's
+      - /app/node_modules
     depends_on:
       - backend
-
-  # Enabled during the map-preview (bonus) phase; serves COG tiles to Leaflet.
-  # titiler:
-  #   image: ghcr.io/developmentseed/titiler:latest
-  #   ports:
-  #     - "8001:8000"
-  #   depends_on:
-  #     - minio
 
 volumes:
   pgdata:

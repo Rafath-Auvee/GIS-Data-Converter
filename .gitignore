@@ -1,4 +1,3 @@
-# --- Python ---
 __pycache__/
 *.py[cod]
 .venv/
@@ -7,25 +6,20 @@ venv/
 .pytest_cache/
 .mypy_cache/
 
-# --- Node / Next.js ---
 node_modules/
 .next/
 out/
 build/
 dist/
 
-# --- Env & secrets ---
 .env
 .env.local
 
-# --- Local data / scratch ---
-# Ignore the (large, re-downloadable) datasets but keep the docs that explain them.
 /data/*
 !/data/README.md
 backend/uploads/
 backend/outputs/
 
-# --- OS ---
 .DS_Store
 Thumbs.db
 
