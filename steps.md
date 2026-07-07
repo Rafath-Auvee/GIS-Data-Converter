@@ -39,16 +39,20 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 
 ## Frontend - Mandatory (Core)
 
+Built with **shadcn/ui** (Base UI) + Tailwind v4. Feature components live in
+`frontend/src/components/converter/`. **Sonner** toasts cover loading / progress /
+complete / error.
+
 | PDF requirement | Status | Notes |
 |---|---|---|
-| Drag-and-drop upload + visual feedback | ✅ | |
-| Format selection dropdown | ✅ | |
+| Drag-and-drop upload + visual feedback | ✅ | `file-dropzone`; shows accepted types + file size |
+| Format selection dropdown | ✅ | shadcn `Select` in `config-panel` |
 | EPSG selector | ✅ | shown for reprojection |
-| Parameter controls (rasterize resolution, band selection) | ⚠️ | Not exposed in UI (backend has defaults) |
-| Real-time progress display | ✅ | progress bar + polling |
-| Download button | ✅ | |
-| File name + size shown | ✅ | |
-| User-friendly error messages | ✅ | |
+| Parameter controls (rasterize resolution, band selection) | ✅ | resolution + band inputs, conditional per conversion |
+| Real-time progress display | ✅ | shadcn `Progress` + 1s polling + progress toast |
+| Download button | ✅ | shadcn `Button` in `result-card` |
+| File name + size shown | ✅ | shown in `result-card` |
+| User-friendly error messages | ✅ | inline + Sonner error toast + `Alert` on failure |
 
 ---
 
@@ -78,6 +82,6 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 
 1. Verify the 5 conversions run end-to-end (in progress).
 2. Wire the GeoJSON / GeoTIFF structure validation into the upload flow.
-3. Expose resolution / band parameter controls in the frontend config panel.
+3. ~~Expose resolution / band parameter controls in the frontend~~ - **done** (shadcn config panel).
 
 Everything else (map preview, history, batch, extra formats, auth) is **bonus**.

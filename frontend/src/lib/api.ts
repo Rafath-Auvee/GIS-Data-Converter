@@ -45,6 +45,15 @@ export const CONVERSIONS: { value: ConversionType; label: string }[] = [
   { value: "reproject", label: "Reprojection (EPSG)" },
 ];
 
+export const ACCEPTED_EXTENSIONS: Record<ConversionType, string[]> = {
+  geojson_to_csv: [".geojson", ".json"],
+  csv_to_geojson: [".csv"],
+  geotiff_to_cog: [".tif", ".tiff"],
+  raster_to_geojson: [".tif", ".tiff"],
+  geojson_to_raster: [".geojson", ".json"],
+  reproject: [".geojson", ".json", ".gpkg", ".kml", ".tif", ".tiff"],
+};
+
 async function unwrap<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let detail = res.statusText;
@@ -63,13 +72,15 @@ export async function uploadFile(params: {
   file: File;
   conversion: ConversionType;
   targetEpsg?: number;
+  resolution?: number;
+  band?: number;
 }): Promise<UploadAccepted> {
   const form = new FormData();
   form.append("file", params.file);
   form.append("conversion", params.conversion);
-  if (params.targetEpsg != null) {
-    form.append("target_epsg", String(params.targetEpsg));
-  }
+  if (params.targetEpsg != null) form.append("target_epsg", String(params.targetEpsg));
+  if (params.resolution != null) form.append("resolution", String(params.resolution));
+  if (params.band != null) form.append("band", String(params.band));
   const res = await fetch(`${API_URL}/api/upload`, { method: "POST", body: form });
   return unwrap<UploadAccepted>(res);
 }

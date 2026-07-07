@@ -9,11 +9,17 @@ download the processed results.
 ## 1. Final Stack
 
 ### Frontend
-- **Next.js** (App Router) + React
+- **Next.js 16** (App Router) + React 19
+- **shadcn/ui** (Base UI) + **Tailwind v4** - component library & styling
+- **Sonner** - toast notifications (loading / progress / complete / error)
 - **TanStack Query** - server state / task-status polling
 - **Zustand** - UI state
-- **Leaflet** - interactive map + GeoJSON/COG preview
-- **Tailwind** - styling
+- **Leaflet** - interactive map + GeoJSON/COG preview (bonus)
+
+**UI structure:** reusable primitives in `frontend/src/components/ui/` (shadcn);
+feature components in `frontend/src/components/converter/` -
+`file-dropzone`, `config-panel`, `status-dashboard`, `result-card`, and the
+`converter` orchestrator rendered by `app/page.tsx`.
 
 ### Backend
 - **FastAPI + Pydantic v2** - API + auto OpenAPI/Swagger docs
