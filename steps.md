@@ -1,34 +1,83 @@
-# GIS Data Converter — Progress
+# GIS Data Converter - Requirements Tracker
 
-## ✅ Steps done so far
+Status against `GIS_Data_Converter_MiniProject.pdf`.
 
-### 🗂️ Data
-
-- Downloaded **all 4 PDF datasets** + 7 extras; organized into `data/{vector,tabular,raster,formats}`
-- Verified every file valid; audited & confirmed no junk
-- Documented fully in `data/README.md` (PDF→file mapping, per-file explanations, benchmark explanation, re-download script)
-
-### ⚙️ Backend (fully implemented)
-
-- FastAPI app + config + Postgres/SQLAlchemy setup
-- **Task management** — `TaskRecord` DB model, status lifecycle (pending → processing → completed/failed), progress
-- **MinIO storage** — input/output file handling
-- **All 5 conversions** — GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON, GeoJSON→Raster, Reproject
-- **Validation** — extension + GeoJSON (RFC 7946) + GeoTIFF integrity
-- **Celery worker** — async processing with progress updates
-- **Endpoints** — upload, tasks (status/result), download — all real
-- Swagger/OpenAPI docs with examples
-- Dockerfile (GDAL via bundled wheels) — compiles clean
-
-### 🖥️ Frontend (fully implemented)
-
-- Next.js 16 + React 19 + Tailwind v4
-- TanStack Query (status polling), Zustand (state), Leaflet (dep)
-- Typed API client, store, providers, converter UI (drag-drop → config → progress → download)
-- Deps installed; tsc + eslint pass
-
-### 🐳 Infra
-
-- docker-compose with **6 services** (db, redis, minio, backend, worker, frontend) — validated
+**Legend:** ✅ done · ⚠️ partial · 🔄 in progress · ⬜ not started
 
 ---
+
+## Backend - Mandatory (Core)
+
+| PDF requirement | Status | Notes |
+|---|---|---|
+| File Upload API (`multipart/form-data`, multi-format) | ✅ | `POST /api/upload` |
+| Task ID generation | ✅ | UUID per job |
+| Task status (pending/processing/completed/failed) | ✅ | stored in DB, polled by frontend |
+| Fetch results endpoint | ✅ | `GET /api/tasks/{id}/result` |
+| Download endpoint | ✅ | `GET /api/download/{id}` |
+| Conversion Engine - Top 5 | 🔄 | Implemented; being verified live |
+| Validate file formats/extensions | ✅ | `validate_extension` (wired in) |
+| Validate GeoJSON (RFC 7946) | ⚠️ | Function exists but not called in upload flow |
+| Validate GeoTIFF integrity + CRS | ⚠️ | Function exists but not called in upload flow |
+| API Documentation (OpenAPI/Swagger) | ✅ | `/docs` with examples |
+
+**Top 5 conversions:** GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON, GeoJSON→Raster, Reprojection.
+
+---
+
+## Backend - Bonus (Optional)
+
+| PDF requirement | Status | Notes |
+|---|---|---|
+| Async processing + progress updates | ✅ | Celery + Redis, progress field |
+| Database for task metadata | ✅ | Postgres `tasks` table |
+| Conversion history endpoint (list past tasks) | ⬜ | No `GET /api/tasks` list yet |
+| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ⬜ | Datasets ready in `data/formats/` |
+| User management (register / login / API keys) | ⬜ | |
+
+---
+
+## Frontend - Mandatory (Core)
+
+| PDF requirement | Status | Notes |
+|---|---|---|
+| Drag-and-drop upload + visual feedback | ✅ | |
+| Format selection dropdown | ✅ | |
+| EPSG selector | ✅ | shown for reprojection |
+| Parameter controls (rasterize resolution, band selection) | ⚠️ | Not exposed in UI (backend has defaults) |
+| Real-time progress display | ✅ | progress bar + polling |
+| Download button | ✅ | |
+| File name + size shown | ✅ | |
+| User-friendly error messages | ✅ | |
+
+---
+
+## Frontend - Bonus (Optional)
+
+| PDF requirement | Status | Notes |
+|---|---|---|
+| Interactive map preview (GeoJSON / COG) | ⬜ | Leaflet installed, not built |
+| Attribute table preview | ⬜ | |
+| Batch upload | ⬜ | |
+| History panel | ⬜ | |
+| Advanced GDAL params (compression, NoData, tiling) | ⬜ | |
+
+---
+
+## Delivered With
+
+| PDF requirement | Status | Notes |
+|---|---|---|
+| Setup / installation instructions | ⚠️ | README has stack + Docker commands; no clean step-by-step |
+| API examples (curl / Postman) | ⚠️ | curl snippets in Swagger; no dedicated section/collection |
+| Demo using sample datasets | 🔄 | Testing GeoJSON→CSV now |
+
+---
+
+## Remaining to be fully airtight on mandatory
+
+1. Verify the 5 conversions run end-to-end (in progress).
+2. Wire the GeoJSON / GeoTIFF structure validation into the upload flow.
+3. Expose resolution / band parameter controls in the frontend config panel.
+
+Everything else (map preview, history, batch, extra formats, auth) is **bonus**.

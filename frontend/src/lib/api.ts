@@ -54,7 +54,7 @@ async function unwrap<T>(res: Response): Promise<T> {
     } catch {
       detail = res.statusText;
     }
-    throw new Error(`${res.status} — ${detail}`);
+    throw new Error(`${res.status} - ${detail}`);
   }
   return (await res.json()) as T;
 }

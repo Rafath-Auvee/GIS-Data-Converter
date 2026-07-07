@@ -15,8 +15,7 @@ dist/
 .env
 .env.local
 
-/data/*
-!/data/README.md
+/data/
 backend/uploads/
 backend/outputs/
 

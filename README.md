@@ -10,68 +10,68 @@ download the processed results.
 
 ### Frontend
 - **Next.js** (App Router) + React
-- **TanStack Query** — server state / task-status polling
-- **Zustand** — UI state
-- **Leaflet** — interactive map + GeoJSON/COG preview
-- **Tailwind** — styling
+- **TanStack Query** - server state / task-status polling
+- **Zustand** - UI state
+- **Leaflet** - interactive map + GeoJSON/COG preview
+- **Tailwind** - styling
 
 ### Backend
-- **FastAPI + Pydantic v2** — API + auto OpenAPI/Swagger docs
+- **FastAPI + Pydantic v2** - API + auto OpenAPI/Swagger docs
 - **Conversion engine:** rasterio, rio-cogeo, geopandas, shapely, pyproj, fiona (built on **GDAL**)
 
 ### Async Processing
-- **Celery** workers + **Redis** broker — long-running jobs + real-time progress updates
+- **Celery** workers + **Redis** broker - long-running jobs + real-time progress updates
 
 ### Storage & Tiling
-- **MinIO** (S3-compatible) — uploads + output COG storage
-- **TiTiler** — serves COG tiles to Leaflet for map preview
+- **MinIO** (S3-compatible) - uploads + output COG storage
+- **TiTiler** - serves COG tiles to Leaflet for map preview
 
 ### Database
-- **Postgres + PostGIS** — task metadata & conversion history
+- **Postgres + PostGIS** - task metadata & conversion history
 
 ### Auth
-- **JWT** (optional — added last)
+- **JWT** (optional - added last)
 
 ### Orchestration
-- **docker-compose** — one-command dev; also solves GDAL-on-Windows install issues
+- **docker-compose** - one-command dev; also solves GDAL-on-Windows install issues
 
-> **Cost:** 100% free & open-source. Everything runs locally in Docker — no cloud accounts or paid services required.
+> **Cost:** 100% free & open-source. Everything runs locally in Docker - no cloud accounts or paid services required.
 
 ---
 
 ## 2. Project Tasks
 
 ### Backend (Mandatory)
-- **File Upload API** — accept uploads via `multipart/form-data`, support multiple geospatial formats
+- **File Upload API** - accept uploads via `multipart/form-data`, support multiple geospatial formats
 - **Task Management**
   - Generate a unique task ID per conversion job
   - Maintain and expose task status: `pending`, `processing`, `completed`, `failed`
   - Endpoint to fetch conversion results
   - Download endpoint for the output file
-- **Conversion Engine** — implement the Top 5 priority conversions (see section 3)
+- **Conversion Engine** - implement the Top 5 priority conversions (see section 3)
 - **Data Validation**
   - Validate uploaded file formats and extensions
   - Validate GeoJSON structure (RFC 7946 compliance)
   - Validate GeoTIFF integrity and read coordinate system metadata
-- **API Documentation** — machine-readable (OpenAPI/Swagger)
+- **API Documentation** - machine-readable (OpenAPI/Swagger)
 
 ### Frontend (Mandatory)
-- **Upload Interface** — drag-and-drop or click-to-select; visual feedback for accepted file types/sizes
-- **Configuration Panel** — input/output format dropdowns, EPSG code selector, basic params (rasterization resolution, band selection)
-- **Progress & Status Dashboard** — real-time task status + visual progress bar
-- **Results Section** — prominent download button, output file name and size
-- **Error Handling** — clear, user-friendly error messages
+- **Upload Interface** - drag-and-drop or click-to-select; visual feedback for accepted file types/sizes
+- **Configuration Panel** - input/output format dropdowns, EPSG code selector, basic params (rasterization resolution, band selection)
+- **Progress & Status Dashboard** - real-time task status + visual progress bar
+- **Results Section** - prominent download button, output file name and size
+- **Error Handling** - clear, user-friendly error messages
 
 ### Backend (Bonus / Optional)
 - Secondary conversions: GeoJSON ↔ Shapefile, GeoJSON ↔ GeoPackage, GeoJSON ↔ KML/KMZ, multi-band GeoTIFF → single-band COGs, GeoJSON ↔ COCO JSON
-- Persistence layer — store task metadata + conversion history endpoints
+- Persistence layer - store task metadata + conversion history endpoints
 - Simple user management (registration, login, API keys)
-- Asynchronous processing — background worker queue with real-time progress (WebSocket/SSE)
+- Asynchronous processing - background worker queue with real-time progress (WebSocket/SSE)
 
 ### Frontend (Bonus / Optional)
 - Interactive map preview (Leaflet) for GeoJSON/COG output + attribute tables
-- Batch upload — multiple files converted simultaneously
-- History panel — list past tasks, re-download without re-uploading
+- Batch upload - multiple files converted simultaneously
+- History panel - list past tasks, re-download without re-uploading
 - Advanced GDAL-like parameters (compression, NoData values, output resolution, tiling)
 
 ### Delivered With

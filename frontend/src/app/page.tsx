@@ -95,7 +95,7 @@ export default function Home() {
         {file ? (
           <p className="text-sm">
             <span className="font-medium">{file.name}</span>
-            <span className="opacity-60"> — {humanSize(file.size)}</span>
+            <span className="opacity-60"> - {humanSize(file.size)}</span>
           </p>
         ) : (
           <p className="text-sm opacity-70">
