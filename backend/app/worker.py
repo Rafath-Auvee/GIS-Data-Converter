@@ -40,7 +40,12 @@ def run_conversion_task(task_id: str) -> None:
             db.commit()
 
             output_path = run_conversion(
-                task.conversion, input_path, tmpdir, target_epsg=task.target_epsg
+                task.conversion,
+                input_path,
+                tmpdir,
+                target_epsg=task.target_epsg,
+                resolution=task.resolution,
+                band=task.band,
             )
 
             task.progress = 80

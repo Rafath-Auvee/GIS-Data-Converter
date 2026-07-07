@@ -23,7 +23,8 @@ def run(
     output_dir: Path,
     *,
     target_epsg: int | None = None,
-    resolution: float = 0.05,
+    resolution: float | None = None,
+    band: int | None = None,
 ) -> Path:
     """Run a conversion and return the path to the produced output file."""
     conversion = ConversionType(conversion)
@@ -40,10 +41,10 @@ def run(
         geotiff_cog.geotiff_to_cog(input_path, out)
     elif conversion is ConversionType.raster_to_geojson:
         out = output_dir / f"{stem}.geojson"
-        raster_geojson.raster_to_geojson(input_path, out)
+        raster_geojson.raster_to_geojson(input_path, out, band=band or 1)
     elif conversion is ConversionType.geojson_to_raster:
         out = output_dir / f"{stem}_raster.tif"
-        geojson_raster.geojson_to_raster(input_path, out, resolution=resolution)
+        geojson_raster.geojson_to_raster(input_path, out, resolution=resolution or 0.05)
     elif conversion is ConversionType.reproject:
         epsg = target_epsg or 3857
         if input_path.suffix.lower() in RASTER_EXTS:

@@ -1,5 +1,7 @@
 """Upload endpoint: accept a file + conversion config, store it, and queue a task."""
+import tempfile
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
@@ -34,6 +36,14 @@ async def upload_file(
     target_epsg: int | None = Form(
         None, description="Target EPSG code (used by reprojection).", examples=[3857]
     ),
+    resolution: float | None = Form(
+        None,
+        description="Rasterization resolution in CRS units (GeoJSON -> Raster).",
+        examples=[0.05],
+    ),
+    band: int | None = Form(
+        None, description="Raster band to vectorize (Raster -> GeoJSON).", examples=[1]
+    ),
     db: Session = Depends(get_db),
 ):
     """Validate the upload, store it in MinIO, create a task, and dispatch the worker."""
@@ -41,7 +51,7 @@ async def upload_file(
         raise HTTPException(status_code=400, detail="No filename provided.")
 
     try:
-        validation.validate_extension(conversion.value, file.filename)
+        ext = validation.validate_extension(conversion.value, file.filename)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -56,6 +66,20 @@ async def upload_file(
             ),
         )
 
+    # Deep content validation: GeoJSON structure (RFC 7946) / GeoTIFF integrity + CRS.
+    with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = Path(tmp.name)
+    try:
+        if ext in {".geojson", ".json"}:
+            validation.validate_geojson(tmp_path)
+        elif ext in {".tif", ".tiff"}:
+            validation.validate_geotiff(tmp_path)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
     task_id = str(uuid.uuid4())
     input_key = f"inputs/{task_id}/{file.filename}"
     storage.put_bytes(data, input_key)
@@ -66,6 +90,8 @@ async def upload_file(
         conversion=conversion.value,
         source_filename=file.filename,
         target_epsg=target_epsg,
+        resolution=resolution,
+        band=band,
         input_key=input_key,
         progress=0,
     )

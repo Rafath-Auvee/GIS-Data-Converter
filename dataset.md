@@ -6,7 +6,7 @@ A deep-dive into the PDF's **"GeoTIFF Benchmark Files"**. (For the vector datase
 - **Source (from the PDF's Sample Datasets):**
   `https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz`
 - **PDF description:** *"A packaged set of multiple GeoTIFF test files."*
-- **Now extracted to:** `data/byte_50m.tif`, `data/int16_50m.tif`, `data/float32_50m.tif`
+- **Now organized in:** `data/GeoTIFF Benchmark Files/` -> `byte_50m.tif`, `int16_50m.tif`, `float32_50m.tif`
 
 ---
 
@@ -151,12 +151,12 @@ tar -xzf geotiff_sample_files.tar.gz -C data/
 ```
 
 - `tar -x` = extract, `-z` = decompress gzip, `-f` = from this file, `-C data/` = into `data/`.
-- Result: `data/byte_50m.tif`, `data/int16_50m.tif`, `data/float32_50m.tif`.
+- Result: three GeoTIFFs (then organized into `data/GeoTIFF Benchmark Files/`).
 
 Inspect a file's type on any machine:
 
 ```bash
-file data/int16_50m.tif
+file "data/GeoTIFF Benchmark Files/int16_50m.tif"
 # -> TIFF image data ... width=5205, height=4800, bps=16 ...   (bps = bits per sample)
 ```
 
@@ -178,7 +178,7 @@ a quirk in the PDF). A small, friendly **vector** file - the perfect counterpart
 **raster** benchmark files above.
 
 - **Source:** `https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/us-states.json`
-- **In `data/`:** `data/us-states.geojson` (88 KB, 50 features)
+- **In `data/`:** `data/World Countries Boundary/us-states.geojson` (88 KB, 50 features)
 
 ## 1. What it is
 

@@ -15,13 +15,26 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 | Task status (pending/processing/completed/failed) | ✅ | stored in DB, polled by frontend |
 | Fetch results endpoint | ✅ | `GET /api/tasks/{id}/result` |
 | Download endpoint | ✅ | `GET /api/download/{id}` |
-| Conversion Engine - Top 5 | 🔄 | Implemented; being verified live |
+| Conversion Engine - Top 5 | ✅ | **All 5 verified end-to-end** via API (see results below) |
 | Validate file formats/extensions | ✅ | `validate_extension` (wired in) |
-| Validate GeoJSON (RFC 7946) | ⚠️ | Function exists but not called in upload flow |
-| Validate GeoTIFF integrity + CRS | ⚠️ | Function exists but not called in upload flow |
+| Validate GeoJSON (RFC 7946) | ✅ | `validate_geojson` now called in `upload.py` (400 on bad input) |
+| Validate GeoTIFF integrity + CRS | ✅ | `validate_geotiff` now called in `upload.py` (400 on bad input) |
 | API Documentation (OpenAPI/Swagger) | ✅ | `/docs` with examples |
 
 **Top 5 conversions:** GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON, GeoJSON→Raster, Reprojection.
+
+**Verified end-to-end (on a clean Docker rebuild):**
+
+| Conversion | Input | Output | Result |
+|---|---|---|---|
+| GeoJSON → CSV | `us-states.geojson` | `us-states.csv` | ✅ completed |
+| GeoTIFF → COG | `cea.tif` | `cea_cog.tif` | ✅ completed |
+| Raster → GeoJSON | `cea.tif` | `cea.geojson` | ✅ completed |
+| GeoJSON → Raster | `us-states.geojson` | `us-states_raster.tif` | ✅ completed |
+| Reprojection (3857) | `us-states.geojson` | `us-states_epsg3857.geojson` | ✅ completed |
+
+> Note: the backend image installs **`libexpat1`** (a system lib `rasterio` needs) - without
+> it every conversion crashed on `import rasterio`.
 
 ---
 
@@ -74,14 +87,16 @@ complete / error.
 |---|---|---|
 | Setup / installation instructions | ⚠️ | README has stack + Docker commands; no clean step-by-step |
 | API examples (curl / Postman) | ⚠️ | curl snippets in Swagger; no dedicated section/collection |
-| Demo using sample datasets | 🔄 | Testing GeoJSON→CSV now |
+| Demo using sample datasets | ✅ | All 5 conversions run end-to-end on the sample data |
 
 ---
 
 ## Remaining to be fully airtight on mandatory
 
-1. Verify the 5 conversions run end-to-end (in progress).
-2. Wire the GeoJSON / GeoTIFF structure validation into the upload flow.
-3. ~~Expose resolution / band parameter controls in the frontend~~ - **done** (shadcn config panel).
+1. ~~Verify the 5 conversions run end-to-end~~ - **done** (all 5 completed via API).
+2. ~~Wire the GeoJSON / GeoTIFF validation into the upload flow~~ - **done**.
+3. ~~Expose resolution / band controls~~ - **done** (UI + wired through backend to the worker).
 
-Everything else (map preview, history, batch, extra formats, auth) is **bonus**.
+✅ **All mandatory backend + frontend requirements are complete and verified.** Everything
+that remains (map preview, history panel, batch upload, secondary conversions, user auth) is
+strictly **bonus**.

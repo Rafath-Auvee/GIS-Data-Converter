@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.db import Base, engine
 from app.routers import download, tasks, upload
@@ -25,6 +26,11 @@ async def lifespan(app: FastAPI):
     from app.models import task_record
 
     Base.metadata.create_all(bind=engine)
+
+    # Lightweight migration: add columns that were introduced after the table existed.
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS resolution double precision"))
+        conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS band integer"))
 
     for attempt in range(10):
         try:

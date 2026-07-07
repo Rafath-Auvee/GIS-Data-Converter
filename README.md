@@ -4,6 +4,21 @@ A web-based geospatial data conversion service. Users upload files in one format
 configure conversion options (target format, coordinate system, parameters), and
 download the processed results.
 
+> **Status:** All mandatory backend + frontend features are implemented and **verified
+> end-to-end on Docker** - all 5 conversions (GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON,
+> GeoJSON→Raster, Reprojection) run and download successfully. See
+> [steps.md](steps.md) for the full requirements tracker and
+> [python-code.md](python-code.md) for a file-by-file backend explanation.
+
+## Quick start
+
+```bash
+docker compose up -d          # build + start all 6 services
+```
+
+Then open **<http://localhost:3000>** (UI), **<http://localhost:8000/docs>** (API docs),
+or **<http://localhost:9001>** (MinIO console).
+
 ---
 
 ## 1. Final Stack

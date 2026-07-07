@@ -1,7 +1,7 @@
 """SQLAlchemy ORM model for persisted conversion tasks."""
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 from app.db import Base
 
@@ -14,6 +14,8 @@ class TaskRecord(Base):
     conversion = Column(String, nullable=False)
     source_filename = Column(String, nullable=False)
     target_epsg = Column(Integer, nullable=True)
+    resolution = Column(Float, nullable=True)
+    band = Column(Integer, nullable=True)
     input_key = Column(String, nullable=False)
     output_key = Column(String, nullable=True)
     output_filename = Column(String, nullable=True)
