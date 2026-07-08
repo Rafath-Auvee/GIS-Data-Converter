@@ -2,108 +2,972 @@
   "info": {
     "name": "GIS Data Converter",
     "_postman_id": "8f1a1a1a-2222-4d3d-9a1a-gisdataconverter",
-    "description": "API endpoints for the GIS Data Converter service. Import this collection, then set the `base_url` and `task_id` collection variables.",
+    "description": "Full API for the GIS Data Converter service.\n\n**Setup:** import this collection, set the `base_url` variable if not localhost, then run any *Upload* request \u2014 it auto-saves the returned `task_id`, so *Get task status* / *Get task result* / *Download output* work with no manual copy-paste.\n\nEach upload points at the matching sample in the repo's `test cases/` folder. If Postman can't find a file, re-select it in the request's Body tab (formdata `file` row).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:8000" },
-    { "key": "task_id", "value": "" }
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "task_id",
+      "value": ""
+    }
   ],
   "item": [
     {
-      "name": "Health check",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/health"
-      }
-    },
-    {
-      "name": "Upload - GeoJSON to CSV",
-      "request": {
-        "method": "POST",
-        "url": "{{base_url}}/api/upload",
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            { "key": "file", "type": "file", "src": [] },
-            { "key": "conversion", "value": "geojson_to_csv", "type": "text" }
-          ]
+      "name": "System",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Service health check."
+          }
         }
-      }
+      ]
     },
     {
-      "name": "Upload - GeoTIFF to COG (advanced params)",
-      "request": {
-        "method": "POST",
-        "url": "{{base_url}}/api/upload",
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            { "key": "file", "type": "file", "src": [] },
-            { "key": "conversion", "value": "geotiff_to_cog", "type": "text" },
-            { "key": "compression", "value": "lzw", "type": "text" },
-            { "key": "nodata", "value": "0", "type": "text" },
-            { "key": "blocksize", "value": "256", "type": "text" }
-          ]
+      "name": "Core conversions (mandatory Top 5)",
+      "item": [
+        {
+          "name": "GeoJSON \u2192 CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geojson_to_csv/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geojson_to_csv",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geojson_to_csv` sample and queue a `geojson_to_csv` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "CSV \u2192 GeoJSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/csv_to_geojson/cities.csv"
+                },
+                {
+                  "key": "conversion",
+                  "value": "csv_to_geojson",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/csv_to_geojson` sample and queue a `csv_to_geojson` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "GeoTIFF \u2192 COG (advanced params)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geotiff_to_cog/elevation.tif"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geotiff_to_cog",
+                  "type": "text"
+                },
+                {
+                  "key": "compression",
+                  "value": "lzw",
+                  "type": "text"
+                },
+                {
+                  "key": "nodata",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "blocksize",
+                  "value": "256",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geotiff_to_cog` sample and queue a `geotiff_to_cog` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "Raster \u2192 GeoJSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/raster_to_geojson/landcover_mask.tif"
+                },
+                {
+                  "key": "conversion",
+                  "value": "raster_to_geojson",
+                  "type": "text"
+                },
+                {
+                  "key": "band",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/raster_to_geojson` sample and queue a `raster_to_geojson` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "GeoJSON \u2192 Raster",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geojson_to_raster/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geojson_to_raster",
+                  "type": "text"
+                },
+                {
+                  "key": "resolution",
+                  "value": "0.05",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geojson_to_raster` sample and queue a `geojson_to_raster` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "Reprojection \u2014 vector (\u2192 EPSG:3857)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/reproject/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "reproject",
+                  "type": "text"
+                },
+                {
+                  "key": "target_epsg",
+                  "value": "3857",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/reproject` sample and queue a `reproject` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "Reprojection \u2014 raster (\u2192 EPSG:3857)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/reproject/elevation.tif"
+                },
+                {
+                  "key": "conversion",
+                  "value": "reproject",
+                  "type": "text"
+                },
+                {
+                  "key": "target_epsg",
+                  "value": "3857",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/reproject` sample and queue a `reproject` job. Saves the returned task_id to the `task_id` collection variable."
+          }
         }
-      }
+      ]
     },
     {
-      "name": "Upload - Reprojection",
-      "request": {
-        "method": "POST",
-        "url": "{{base_url}}/api/upload",
-        "body": {
-          "mode": "formdata",
-          "formdata": [
-            { "key": "file", "type": "file", "src": [] },
-            { "key": "conversion", "value": "reproject", "type": "text" },
-            { "key": "target_epsg", "value": "3857", "type": "text" }
-          ]
+      "name": "Secondary conversions (bonus)",
+      "item": [
+        {
+          "name": "GeoJSON \u2192 Shapefile (zip)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geojson_to_shapefile/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geojson_to_shapefile",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geojson_to_shapefile` sample and queue a `geojson_to_shapefile` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "Shapefile (zip) \u2192 GeoJSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/shapefile_to_geojson/regions_shapefile.zip"
+                },
+                {
+                  "key": "conversion",
+                  "value": "shapefile_to_geojson",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/shapefile_to_geojson` sample and queue a `shapefile_to_geojson` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "GeoJSON \u2192 GeoPackage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geojson_to_gpkg/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geojson_to_gpkg",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geojson_to_gpkg` sample and queue a `geojson_to_gpkg` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "GeoPackage \u2192 GeoJSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/gpkg_to_geojson/regions.gpkg"
+                },
+                {
+                  "key": "conversion",
+                  "value": "gpkg_to_geojson",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/gpkg_to_geojson` sample and queue a `gpkg_to_geojson` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "GeoJSON \u2192 KML",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geojson_to_kml/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geojson_to_kml",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geojson_to_kml` sample and queue a `geojson_to_kml` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "KML/KMZ \u2192 GeoJSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/kml_to_geojson/regions.kml"
+                },
+                {
+                  "key": "conversion",
+                  "value": "kml_to_geojson",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/kml_to_geojson` sample and queue a `kml_to_geojson` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "Multi-band \u2192 single-band COGs (zip)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/multiband_to_cogs/rgb.tif"
+                },
+                {
+                  "key": "conversion",
+                  "value": "multiband_to_cogs",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/multiband_to_cogs` sample and queue a `multiband_to_cogs` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "GeoJSON \u2192 COCO JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/geojson_to_coco/regions.geojson"
+                },
+                {
+                  "key": "conversion",
+                  "value": "geojson_to_coco",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/geojson_to_coco` sample and queue a `geojson_to_coco` job. Saves the returned task_id to the `task_id` collection variable."
+          }
+        },
+        {
+          "name": "COCO JSON \u2192 GeoJSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const id = pm.response.json().task_id;",
+                  "  pm.collectionVariables.set('task_id', id);",
+                  "  console.log('Saved task_id =', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "upload"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "test cases/coco_to_geojson/regions_coco.json"
+                },
+                {
+                  "key": "conversion",
+                  "value": "coco_to_geojson",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload the `test cases/coco_to_geojson` sample and queue a `coco_to_geojson` job. Saves the returned task_id to the `task_id` collection variable."
+          }
         }
-      }
+      ]
     },
     {
-      "name": "List tasks (history)",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/api/tasks"
-      }
-    },
-    {
-      "name": "Get task status",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/api/tasks/{{task_id}}"
-      }
-    },
-    {
-      "name": "Get task result",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/api/tasks/{{task_id}}/result"
-      }
-    },
-    {
-      "name": "Download output",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/api/download/{{task_id}}"
-      }
-    },
-    {
-      "name": "Delete one task",
-      "request": {
-        "method": "DELETE",
-        "url": "{{base_url}}/api/tasks/{{task_id}}"
-      }
-    },
-    {
-      "name": "Clear all history",
-      "request": {
-        "method": "DELETE",
-        "url": "{{base_url}}/api/tasks"
-      }
+      "name": "Task management",
+      "item": [
+        {
+          "name": "List tasks (history)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            },
+            "description": "List recent conversion tasks, newest first."
+          }
+        },
+        {
+          "name": "Get task status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{task_id}}"
+              ]
+            },
+            "description": "Poll one task's status (pending \u2192 processing \u2192 completed/failed)."
+          }
+        },
+        {
+          "name": "Get task result",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}/result",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{task_id}}",
+                "result"
+              ]
+            },
+            "description": "Fetch result metadata (output filename/size + download URL once completed)."
+          }
+        },
+        {
+          "name": "Download output",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/download/{{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "download",
+                "{{task_id}}"
+              ]
+            },
+            "description": "Download the converted output file (available once completed)."
+          }
+        },
+        {
+          "name": "Delete one task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{task_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{task_id}}"
+              ]
+            },
+            "description": "Delete one task and remove its files from object storage."
+          }
+        },
+        {
+          "name": "Clear all history",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            },
+            "description": "Delete every task and its files."
+          }
+        }
+      ]
     }
   ]
 }

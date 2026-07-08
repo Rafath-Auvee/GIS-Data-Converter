@@ -5,10 +5,10 @@ configure conversion options (target format, coordinate system, parameters), and
 download the processed results.
 
 > **Status:** All mandatory backend + frontend features are implemented and **verified
-> end-to-end on Docker** - all 5 conversions (GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON,
-> GeoJSON→Raster, Reprojection) run and download successfully. See
-> [steps.md](steps.md) for the full requirements tracker and
-> [python-code.md](python-code.md) for a file-by-file backend explanation.
+> end-to-end on Docker** - all **5 mandatory** conversions plus **all 5 bonus** secondary
+> conversions (15 conversion directions in total) run and download successfully. A small,
+> committed sample input for every one lives in [`test cases/`](test%20cases/). See
+> [steps.md](steps.md) for the full requirements tracker.
 
 ## Quick start
 
@@ -17,7 +17,7 @@ docker compose up -d          # build + start all 6 services
 ```
 
 Then open **<http://localhost:3000>** (UI), **<http://localhost:8000/docs>** (API docs),
-or **<http://localhost:9001>** (MinIO console).
+**<http://localhost:9001>** (MinIO console), or **<http://localhost:5050>** (pgAdmin).
 
 ---
 
@@ -26,15 +26,17 @@ or **<http://localhost:9001>** (MinIO console).
 ### Frontend
 - **Next.js 16** (App Router) + React 19
 - **shadcn/ui** (Base UI) + **Tailwind v4** - component library & styling
-- **Sonner** - toast notifications (loading / progress / complete / error)
+- **react-hot-toast** - toast notifications (loading / progress / complete / error)
 - **TanStack Query** - server state / task-status polling
 - **Zustand** - UI state
-- **Leaflet** - interactive map + GeoJSON/COG preview (bonus)
+- **Leaflet** + **react-leaflet** - interactive map preview of **GeoJSON** output (bonus)
+- **PapaParse** - client-side CSV parsing for the attribute-table preview
 
 **UI structure:** reusable primitives in `frontend/src/components/ui/` (shadcn);
-feature components in `frontend/src/components/converter/` -
-`file-dropzone`, `config-panel`, `status-dashboard`, `result-card`, and the
-`converter` orchestrator rendered by `app/page.tsx`.
+feature components in `frontend/src/components/` - `converter/` (`file-dropzone`,
+`config-panel`, `status-dashboard`), `preview/` (`result-preview`, `map-preview`,
+`attribute-table`) and `dashboard/` (`dashboard`, `history-list`, `batch-progress`,
+`activity-log`). `app/page.tsx` renders the `Dashboard` orchestrator.
 
 ### Backend
 - **FastAPI + Pydantic v2** - API + auto OpenAPI/Swagger docs
@@ -43,18 +45,19 @@ feature components in `frontend/src/components/converter/` -
 ### Async Processing
 - **Celery** workers + **Redis** broker - long-running jobs + real-time progress updates
 
-### Storage & Tiling
-- **MinIO** (S3-compatible) - uploads + output COG storage
-- **TiTiler** - serves COG tiles to Leaflet for map preview
+### Storage
+- **MinIO** (S3-compatible) - stores uploaded inputs + converted outputs
 
 ### Database
-- **Postgres + PostGIS** - task metadata & conversion history
-
-### Auth
-- **JWT** (optional - added last)
+- **Postgres + PostGIS** - task metadata & conversion history (browsable via **pgAdmin**)
 
 ### Orchestration
 - **docker-compose** - one-command dev; also solves GDAL-on-Windows install issues
+
+> **Not implemented (optional bonus):** simple user management (registration / login /
+> API keys) and a dedicated COG tile server (e.g. TiTiler) are the only PDF bonus items
+> not built. The map preview renders **GeoJSON** output only; raster/COG outputs are
+> downloaded rather than tiled in-browser.
 
 > **Cost:** 100% free & open-source. Everything runs locally in Docker - no cloud accounts or paid services required.
 
@@ -170,7 +173,8 @@ Once running:
 
 - Frontend app: <http://localhost:3000>
 - API docs (Swagger): <http://localhost:8000/docs>
-- MinIO console: <http://localhost:9001>
+- MinIO console: <http://localhost:9001> (login: `minioadmin` / `minioadmin`)
+- pgAdmin: <http://localhost:5050> (login: `admin@admin.com` / `admin`)
 
 ---
 
@@ -222,22 +226,50 @@ curl -X DELETE http://localhost:8000/api/tasks/TASK_ID
 curl -X DELETE http://localhost:8000/api/tasks
 ```
 
-See [`/docs`](http://localhost:8000/docs) for the full interactive Swagger UI with
-request/response schemas for every conversion type.
+> **Tip:** the `data/` paths above are git-ignored. For a guaranteed-present input,
+> point `file=@` at any sample under [`test cases/`](test%20cases/) instead, e.g.
+> `-F 'file=@test cases/geojson_to_csv/regions.geojson'`.
+
+### API documentation (OpenAPI / Swagger)
+
+- **Interactive Swagger UI:** <http://localhost:8000/docs> - try every endpoint in the
+  browser, with request/response schemas for all conversion types.
+- **ReDoc:** <http://localhost:8000/redoc>
+- **Machine-readable spec:** <http://localhost:8000/openapi.json> (live) - a snapshot is
+  also committed at [`docs/openapi.json`](docs/openapi.json) so the spec can be viewed,
+  diffed, or imported without the stack running.
 
 ---
 
-## 7. Sample Datasets
+## 7. Sample Datasets & Test Cases
 
-Test data lives in [`data/`](data/). See [data/README.md](data/README.md) for the full
-source URLs, licenses, and a re-download script. Summary:
+There are two sets of sample inputs:
 
-| Type | Files |
-|------|-------|
-| **Vector** | `us-states.geojson`, `ne_countries.geojson`, `ne_populated_places.geojson`, `gadm41_USA.gpkg` |
-| **Tabular** | `cities.csv` |
-| **Raster** | `cea.tif`, `usgs_ortho.tif`, `rgb_byte.tif`, `benchmark/{byte,int16,float32}_50m.tif` |
-| **Bonus formats** | Shapefile, `gdal_sample.gpkg`, `sample.kml` |
+### `test cases/` (committed, one per conversion)
 
-> The datasets are **gitignored** (large and re-downloadable); only `data/README.md`
-> is tracked, so a fresh clone can regenerate `data/` from the documented sources.
+Small, self-contained inputs for **every** conversion, each verified end-to-end against
+the real engine. This is the fastest way to exercise the API. See
+[`test cases/README.md`](test%20cases/README.md) for a per-conversion table and
+copy-paste curl/Postman commands.
+
+```text
+test cases/<conversion>/<sample file>
+  e.g.  test cases/geojson_to_csv/regions.geojson
+        test cases/geotiff_to_cog/elevation.tif
+```
+
+### `data/` (real-world datasets, git-ignored)
+
+The larger, real datasets named in the project PDF. See [dataset.md](dataset.md) for a
+deep-dive on each (source URLs + re-download commands). Actual contents:
+
+| Type | Files (under `data/`) |
+|------|-----------------------|
+| **Vector (GeoJSON)** | `World Countries Boundary/us-states.geojson`, `GADM Global Administrative Areas/GeoJSON/gadm41_USA_{0,1,2}.json` |
+| **Raster (OSGeo samples)** | `OSGeo GeoTIFF Samples/{cea,rgb_byte,usgs_ortho}.tif` |
+| **Raster (benchmark)** | `GeoTIFF Benchmark Files/{byte,int16,float32}_50m.tif` |
+| **Bonus formats (GADM)** | `.../Geopackage/gadm41_USA.gpkg`, `.../Shapefile/gadm41_USA_*.{shp,zip}`, `.../KMZ/gadm41_USA_*.kmz` |
+
+> `data/` is **gitignored** (large and re-downloadable); the tracked
+> [dataset.md](dataset.md) documents where each file comes from so a fresh clone can
+> regenerate it. The `test cases/` samples are committed, so they always work out of the box.

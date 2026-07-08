@@ -46,9 +46,13 @@ app = FastAPI(
     title="GIS Data Converter",
     description=(
         "Web-based geospatial data conversion service.\n\n"
-        "Upload a file, pick a conversion (GeoJSON↔CSV, GeoTIFF→COG, "
-        "Raster→GeoJSON, GeoJSON→Raster, or Reprojection), then poll the task "
-        "and download the result."
+        "Upload a file, pick a conversion, then poll the task and download the result.\n\n"
+        "**Core conversions:** GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON, "
+        "GeoJSON→Raster, Reprojection (EPSG).\n\n"
+        "**Secondary conversions:** GeoJSON↔Shapefile, GeoJSON↔GeoPackage, "
+        "GeoJSON↔KML/KMZ, Multi-band GeoTIFF→single-band COGs, GeoJSON↔COCO JSON.\n\n"
+        "Ready-to-use sample inputs for every conversion live in the `test cases/` "
+        "folder of the repository."
     ),
     version="0.1.0",
     license_info={"name": "MIT"},

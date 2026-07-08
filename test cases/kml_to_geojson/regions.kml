@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="regions" id="regions">
+	<SimpleField name="category" type="string"></SimpleField>
+	<SimpleField name="value" type="int"></SimpleField>
+</Schema>
+<Folder><name>regions</name>
+  <Placemark id="regions.1">
+	<name>Region A</name>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#regions">
+		<SimpleData name="category">forest</SimpleData>
+		<SimpleData name="value">10</SimpleData>
+	</SchemaData></ExtendedData>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>10,50 10.5,50.0 10.5,50.5 10.0,50.5 10,50</coordinates></LinearRing></outerBoundaryIs></Polygon>
+  </Placemark>
+  <Placemark id="regions.2">
+	<name>Region B</name>
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#regions">
+		<SimpleData name="category">water</SimpleData>
+		<SimpleData name="value">20</SimpleData>
+	</SchemaData></ExtendedData>
+      <Polygon><outerBoundaryIs><LinearRing><coordinates>11,50 11.5,50.0 11.5,50.5 11.0,50.5 11,50</coordinates></LinearRing></outerBoundaryIs></Polygon>
+  </Placemark>
+</Folder>
+</Document></kml>

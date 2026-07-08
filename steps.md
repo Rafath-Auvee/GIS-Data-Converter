@@ -38,8 +38,8 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 | Requirement | Status | Notes |
 |---|---|---|
 | Clear setup / installation instructions | ✅ | README Quick Start (`docker compose up -d`) |
-| API endpoint examples (curl / Postman) | ✅ | README §6 curl walkthrough + `postman_collection.json` |
-| Demonstration using sample datasets | ✅ | all 5 conversions verified |
+| API endpoint examples (curl / Postman) | ✅ | README §6 curl walkthrough + `postman_collection.json` (16 upload requests, auto-saves `task_id`) + exported spec `docs/openapi.json` |
+| Demonstration using sample datasets | ✅ | committed per-conversion samples in `test cases/` (see `test cases/README.md`); all 15 conversion directions verified end-to-end |
 
 **Verdict:** all mandatory + delivered-with requirements are complete.
 
@@ -72,7 +72,7 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 | Requirement | Status | Notes |
 |---|---|---|
 | Conversion history panel | ✅ | sidebar with re-download + delete |
-| Interactive map preview (GeoJSON / COG) | ✅ | react-leaflet, dark CARTO basemap, auto-fit bounds |
+| Interactive map preview | ✅ | react-leaflet, dark CARTO basemap, auto-fit bounds; renders **GeoJSON** outputs (raster/COG outputs are downloaded, not tiled in-browser) |
 | Attribute table preview (CSV / GeoJSON) | ✅ | tabbed with map, sourced from GeoJSON properties or parsed CSV |
 | Batch upload | ✅ | multi-file dropzone, concurrent per-file tasks, live per-file progress |
 | Advanced GDAL params (compression, NoData, tiling, resolution) | ✅ | compression/nodata/blocksize wired through upload → worker → COG/rasterize |
@@ -81,6 +81,11 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 
 ## Extra (built, not required by the PDF)
 
+- **`test cases/` folder** - a small, committed, self-contained sample input for every
+  one of the 15 conversion directions, each verified end-to-end against the real engine
+  (see `test cases/README.md`)
+- **Exported OpenAPI spec** at `docs/openapi.json` + expanded Postman collection covering
+  all 16 upload variants with automatic `task_id` capture
 - Toast notifications (react-hot-toast): loading / progress / complete / error
 - Detailed activity log (live terminal-style event feed per task)
 - Delete history (one task or clear all) with MinIO object cleanup
@@ -109,7 +114,7 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 
 **Frontend**
 
-- [x] **Interactive map preview** - `react-leaflet` + dark CARTO basemap, renders GeoJSON output with auto-fit bounds
+- [x] **Interactive map preview** - `react-leaflet` + dark CARTO basemap, renders GeoJSON output with auto-fit bounds (raster/COG outputs are downloaded, not tiled in-browser)
 - [x] **Attribute table preview** - table view of GeoJSON feature properties or parsed CSV rows (first 50 rows)
 - [x] **Batch upload** - multi-file dropzone, uploads run concurrently, each gets its own task + live progress row
 - [x] **Advanced GDAL params** - compression (deflate/lzw/zstd/webp/jpeg/none), NoData value, COG tile block size; verified end-to-end against actual output files with rasterio
