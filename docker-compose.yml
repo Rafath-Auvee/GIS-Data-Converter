@@ -73,6 +73,21 @@ services:
       - backend
     command: sh -c "npm install && npm run dev -- -H 0.0.0.0 -p 3000"
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+      - ./pgadmin-servers.json:/pgadmin4/servers.json
+    depends_on:
+      - db
+
 volumes:
   pgdata:
   miniodata:
+  pgadmindata:

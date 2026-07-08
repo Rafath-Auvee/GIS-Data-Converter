@@ -93,6 +93,24 @@ export async function getTaskResult(taskId: string): Promise<TaskResult> {
   return unwrap<TaskResult>(await fetch(`${API_URL}/api/tasks/${taskId}/result`));
 }
 
+export async function listTasks(): Promise<Task[]> {
+  return unwrap<Task[]>(await fetch(`${API_URL}/api/tasks`));
+}
+
+export function conversionLabel(value: ConversionType): string {
+  return CONVERSIONS.find((c) => c.value === value)?.label ?? value;
+}
+
+export async function deleteTask(taskId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/tasks/${taskId}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`Failed to delete task (${res.status})`);
+}
+
+export async function clearTasks(): Promise<void> {
+  const res = await fetch(`${API_URL}/api/tasks`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`Failed to clear history (${res.status})`);
+}
+
 export function downloadUrl(taskId: string): string {
   return `${API_URL}/api/download/${taskId}`;
 }

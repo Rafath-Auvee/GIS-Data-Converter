@@ -1,0 +1,12 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "GIS Converter DB",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "gis_converter",
+      "Username": "gis"
+    }
+  }
+}

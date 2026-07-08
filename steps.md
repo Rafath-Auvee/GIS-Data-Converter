@@ -1,102 +1,99 @@
-# GIS Data Converter - Requirements Tracker
+# GIS Data Converter - Deliverables Checklist
 
 Status against `GIS_Data_Converter_MiniProject.pdf`.
 
-**Legend:** ✅ done · ⚠️ partial · 🔄 in progress · ⬜ not started
+**Legend:** ✅ complete · ⚠️ partial · ⬜ pending
 
 ---
 
-## Backend - Mandatory (Core)
+## 1. Core Functionalities (Mandatory)
 
-| PDF requirement | Status | Notes |
+### Backend
+
+| Requirement | Status | Notes |
 |---|---|---|
-| File Upload API (`multipart/form-data`, multi-format) | ✅ | `POST /api/upload` |
+| File Upload API (multipart, multi-format) | ✅ | `POST /api/upload` |
 | Task ID generation | ✅ | UUID per job |
-| Task status (pending/processing/completed/failed) | ✅ | stored in DB, polled by frontend |
+| Task status (pending/processing/completed/failed) | ✅ | Postgres, polled by UI |
 | Fetch results endpoint | ✅ | `GET /api/tasks/{id}/result` |
 | Download endpoint | ✅ | `GET /api/download/{id}` |
-| Conversion Engine - Top 5 | ✅ | **All 5 verified end-to-end** via API (see results below) |
-| Validate file formats/extensions | ✅ | `validate_extension` (wired in) |
-| Validate GeoJSON (RFC 7946) | ✅ | `validate_geojson` now called in `upload.py` (400 on bad input) |
-| Validate GeoTIFF integrity + CRS | ✅ | `validate_geotiff` now called in `upload.py` (400 on bad input) |
-| API Documentation (OpenAPI/Swagger) | ✅ | `/docs` with examples |
+| Conversion Engine - Top 5 | ✅ | all verified end-to-end |
+| Validate formats / extensions | ✅ | wired in `upload.py` |
+| Validate GeoJSON (RFC 7946) | ✅ | wired in `upload.py` |
+| Validate GeoTIFF integrity + CRS | ✅ | wired in `upload.py` |
+| API Documentation (OpenAPI/Swagger) | ✅ | `/docs` |
 
-**Top 5 conversions:** GeoJSON↔CSV, GeoTIFF→COG, Raster→GeoJSON, GeoJSON→Raster, Reprojection.
+### Frontend
 
-**Verified end-to-end (on a clean Docker rebuild):**
+| Requirement | Status | Notes |
+|---|---|---|
+| Drag-and-drop upload + visual feedback | ✅ | accepted types + file size |
+| Config panel (format, EPSG, resolution/band) | ✅ | conditional per conversion |
+| Real-time progress display | ✅ | progress bar + 1s polling |
+| Result download button + filename/size | ✅ | |
+| User-friendly error messages | ✅ | inline + toasts + alert |
 
-| Conversion | Input | Output | Result |
-|---|---|---|---|
-| GeoJSON → CSV | `us-states.geojson` | `us-states.csv` | ✅ completed |
-| GeoTIFF → COG | `cea.tif` | `cea_cog.tif` | ✅ completed |
-| Raster → GeoJSON | `cea.tif` | `cea.geojson` | ✅ completed |
-| GeoJSON → Raster | `us-states.geojson` | `us-states_raster.tif` | ✅ completed |
-| Reprojection (3857) | `us-states.geojson` | `us-states_epsg3857.geojson` | ✅ completed |
+### Delivered With
 
-> Note: the backend image installs **`libexpat1`** (a system lib `rasterio` needs) - without
-> it every conversion crashed on `import rasterio`.
+| Requirement | Status | Notes |
+|---|---|---|
+| Clear setup / installation instructions | ✅ | README Quick Start (`docker compose up -d`) |
+| API endpoint examples (curl / Postman) | ⚠️ | only in Swagger; no dedicated section |
+| Demonstration using sample datasets | ✅ | all 5 conversions verified |
+
+**Verdict:** mandatory complete - the one remaining required item is the curl/Postman
+examples doc (⚠️).
+
+**Top 5 verified end-to-end (clean Docker build):**
+
+| Conversion | Input | Output |
+|---|---|---|
+| GeoJSON → CSV | us-states.geojson | us-states.csv |
+| GeoTIFF → COG | cea.tif | cea_cog.tif |
+| Raster → GeoJSON | cea.tif | cea.geojson |
+| GeoJSON → Raster | us-states.geojson | us-states_raster.tif |
+| Reprojection (3857) | us-states.geojson | us-states_epsg3857.geojson |
 
 ---
 
-## Backend - Bonus (Optional)
+## 2. Optional / Advanced Features (Bonus)
 
-| PDF requirement | Status | Notes |
+### Backend
+
+| Requirement | Status | Notes |
 |---|---|---|
-| Async processing + progress updates | ✅ | Celery + Redis, progress field |
+| Async processing + progress | ✅ | Celery + Redis (progress via polling, not WS/SSE) |
 | Database for task metadata | ✅ | Postgres `tasks` table |
-| Conversion history endpoint (list past tasks) | ⬜ | No `GET /api/tasks` list yet |
-| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ⬜ | Datasets ready in `data/formats/` |
-| User management (register / login / API keys) | ⬜ | |
+| Conversion history endpoints | ✅ | `GET /api/tasks` |
+| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ⬜ | 0 of 5 |
+| Simple user management (registration / login / API keys) | ⬜ | |
 
----
+### Frontend
 
-## Frontend - Mandatory (Core)
-
-Built with **shadcn/ui** (Base UI) + Tailwind v4. Feature components live in
-`frontend/src/components/converter/`. **Sonner** toasts cover loading / progress /
-complete / error.
-
-| PDF requirement | Status | Notes |
+| Requirement | Status | Notes |
 |---|---|---|
-| Drag-and-drop upload + visual feedback | ✅ | `file-dropzone`; shows accepted types + file size |
-| Format selection dropdown | ✅ | shadcn `Select` in `config-panel` |
-| EPSG selector | ✅ | shown for reprojection |
-| Parameter controls (rasterize resolution, band selection) | ✅ | resolution + band inputs, conditional per conversion |
-| Real-time progress display | ✅ | shadcn `Progress` + 1s polling + progress toast |
-| Download button | ✅ | shadcn `Button` in `result-card` |
-| File name + size shown | ✅ | shown in `result-card` |
-| User-friendly error messages | ✅ | inline + Sonner error toast + `Alert` on failure |
-
----
-
-## Frontend - Bonus (Optional)
-
-| PDF requirement | Status | Notes |
-|---|---|---|
+| Conversion history panel | ✅ | sidebar with re-download + delete |
 | Interactive map preview (GeoJSON / COG) | ⬜ | Leaflet installed, not built |
-| Attribute table preview | ⬜ | |
+| Attribute table preview (CSV / GeoJSON) | ⬜ | |
 | Batch upload | ⬜ | |
-| History panel | ⬜ | |
-| Advanced GDAL params (compression, NoData, tiling) | ⬜ | |
+| Advanced GDAL params (compression, NoData, tiling, resolution) | ⚠️ | resolution/band done; rest pending |
 
 ---
 
-## Delivered With
+## Extra (built, not required by the PDF)
 
-| PDF requirement | Status | Notes |
-|---|---|---|
-| Setup / installation instructions | ⚠️ | README has stack + Docker commands; no clean step-by-step |
-| API examples (curl / Postman) | ⚠️ | curl snippets in Swagger; no dedicated section/collection |
-| Demo using sample datasets | ✅ | All 5 conversions run end-to-end on the sample data |
+- Toast notifications (react-hot-toast): loading / progress / complete / error
+- Detailed activity log (live terminal-style event feed per task)
+- Delete history (one task or clear all) with MinIO object cleanup
+- Dark-theme sidebar dashboard UI (shadcn + Tailwind v4 + Inter/JetBrains Mono)
+- Upload size limit (413) + orphaned-object cleanup
 
 ---
 
-## Remaining to be fully airtight on mandatory
+## Remaining to be fully airtight
 
-1. ~~Verify the 5 conversions run end-to-end~~ - **done** (all 5 completed via API).
-2. ~~Wire the GeoJSON / GeoTIFF validation into the upload flow~~ - **done**.
-3. ~~Expose resolution / band controls~~ - **done** (UI + wired through backend to the worker).
+1. Add a **curl / Postman API examples** section to the README - the only pending
+   *required* deliverable.
 
-✅ **All mandatory backend + frontend requirements are complete and verified.** Everything
-that remains (map preview, history panel, batch upload, secondary conversions, user auth) is
-strictly **bonus**.
+Everything else remaining is **(Optional) bonus**: secondary conversions, map preview,
+attribute table, batch upload, user management, advanced GDAL params.

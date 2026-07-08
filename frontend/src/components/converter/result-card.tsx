@@ -33,7 +33,7 @@ export function ResultCard({
           <p className="text-xs text-muted-foreground">{humanSize(size)}</p>
         </div>
       </div>
-      <Button render={<a href={href} download />}>
+      <Button nativeButton={false} render={<a href={href} download />}>
         <DownloadIcon />
         Download
       </Button>

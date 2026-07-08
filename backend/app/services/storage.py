@@ -50,3 +50,11 @@ def get_file(object_name: str, local_path: Path) -> None:
 def open_object(object_name: str):
     """Return a streamable urllib3 response for the object (caller must close it)."""
     return client.get_object(settings.minio_bucket, object_name)
+
+
+def remove_object(object_name: str) -> None:
+    """Delete an object; ignore if it is missing."""
+    try:
+        client.remove_object(settings.minio_bucket, object_name)
+    except Exception:
+        pass
