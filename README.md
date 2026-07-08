@@ -97,7 +97,7 @@ feature components in `frontend/src/components/converter/` -
 
 ### Delivered With
 - Clear setup/installation instructions
-- API endpoint examples (curl/Postman)
+- API endpoint examples (curl/Postman) - see [section 6](#6-api-endpoint-examples-curl--postman)
 - Demonstration using the provided sample datasets
 
 ---
@@ -174,7 +174,60 @@ Once running:
 
 ---
 
-## 6. Sample Datasets
+## 6. API Endpoint Examples (curl / Postman)
+
+A ready-made Postman collection is at [`postman_collection.json`](postman_collection.json)
+(import it, then set the `base_url` and `task_id` collection variables). Or use curl:
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Upload + convert: GeoJSON -> CSV
+curl -X POST http://localhost:8000/api/upload \
+  -F "file=@data/World Countries Boundary/us-states.geojson" \
+  -F "conversion=geojson_to_csv"
+# -> {"task_id": "…", "status": "pending"}
+
+# Upload + convert: GeoTIFF -> COG, with advanced GDAL params
+curl -X POST http://localhost:8000/api/upload \
+  -F "file=@data/OSGeo GeoTIFF Samples/cea.tif" \
+  -F "conversion=geotiff_to_cog" \
+  -F "compression=lzw" \
+  -F "nodata=0" \
+  -F "blocksize=256"
+
+# Upload + convert: reprojection to a target EPSG
+curl -X POST http://localhost:8000/api/upload \
+  -F "file=@data/World Countries Boundary/us-states.geojson" \
+  -F "conversion=reproject" \
+  -F "target_epsg=3857"
+
+# List conversion history
+curl http://localhost:8000/api/tasks
+
+# Poll task status (replace TASK_ID with the id returned from /api/upload)
+curl http://localhost:8000/api/tasks/TASK_ID
+
+# Get result metadata (output filename/size + download URL once completed)
+curl http://localhost:8000/api/tasks/TASK_ID/result
+
+# Download the converted file
+curl -OJ http://localhost:8000/api/download/TASK_ID
+
+# Delete one task (also removes its files from MinIO)
+curl -X DELETE http://localhost:8000/api/tasks/TASK_ID
+
+# Clear all history
+curl -X DELETE http://localhost:8000/api/tasks
+```
+
+See [`/docs`](http://localhost:8000/docs) for the full interactive Swagger UI with
+request/response schemas for every conversion type.
+
+---
+
+## 7. Sample Datasets
 
 Test data lives in [`data/`](data/). See [data/README.md](data/README.md) for the full
 source URLs, licenses, and a re-download script. Summary:

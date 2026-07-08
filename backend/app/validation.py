@@ -16,6 +16,19 @@ ALLOWED_EXTENSIONS: dict[str, set[str]] = {
     "kml_to_geojson": {".kml", ".kmz"},
     "multiband_to_cogs": {".tif", ".tiff"},
     "geojson_to_coco": {".geojson", ".json"},
+    "coco_to_geojson": {".json"},
+}
+
+# Conversions whose input is genuinely GeoJSON-shaped (as opposed to some other
+# JSON-based format, e.g. COCO, that happens to share the .json extension).
+GEOJSON_INPUT_CONVERSIONS = {
+    "geojson_to_csv",
+    "geojson_to_raster",
+    "reproject",
+    "geojson_to_shapefile",
+    "geojson_to_gpkg",
+    "geojson_to_kml",
+    "geojson_to_coco",
 }
 
 _GEOJSON_TYPES = {

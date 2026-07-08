@@ -26,6 +26,7 @@ class ConversionType(str, Enum):
     kml_to_geojson = "kml_to_geojson"
     multiband_to_cogs = "multiband_to_cogs"
     geojson_to_coco = "geojson_to_coco"
+    coco_to_geojson = "coco_to_geojson"
 
 
 class Task(BaseModel):

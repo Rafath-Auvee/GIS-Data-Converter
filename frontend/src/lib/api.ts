@@ -16,7 +16,8 @@ export type ConversionType =
   | "geojson_to_kml"
   | "kml_to_geojson"
   | "multiband_to_cogs"
-  | "geojson_to_coco";
+  | "geojson_to_coco"
+  | "coco_to_geojson";
 
 export interface UploadAccepted {
   task_id: string;
@@ -59,6 +60,7 @@ export const CONVERSIONS: { value: ConversionType; label: string }[] = [
   { value: "kml_to_geojson", label: "KML/KMZ → GeoJSON" },
   { value: "multiband_to_cogs", label: "Multi-band → single-band COGs (zip)" },
   { value: "geojson_to_coco", label: "GeoJSON → COCO JSON" },
+  { value: "coco_to_geojson", label: "COCO JSON → GeoJSON" },
 ];
 
 export const ACCEPTED_EXTENSIONS: Record<ConversionType, string[]> = {
@@ -76,6 +78,7 @@ export const ACCEPTED_EXTENSIONS: Record<ConversionType, string[]> = {
   kml_to_geojson: [".kml", ".kmz"],
   multiband_to_cogs: [".tif", ".tiff"],
   geojson_to_coco: [".geojson", ".json"],
+  coco_to_geojson: [".json"],
 };
 
 async function unwrap<T>(res: Response): Promise<T> {

@@ -1,0 +1,109 @@
+{
+  "info": {
+    "name": "GIS Data Converter",
+    "_postman_id": "8f1a1a1a-2222-4d3d-9a1a-gisdataconverter",
+    "description": "API endpoints for the GIS Data Converter service. Import this collection, then set the `base_url` and `task_id` collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "task_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "Upload - GeoJSON to CSV",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/upload",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [] },
+            { "key": "conversion", "value": "geojson_to_csv", "type": "text" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Upload - GeoTIFF to COG (advanced params)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/upload",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [] },
+            { "key": "conversion", "value": "geotiff_to_cog", "type": "text" },
+            { "key": "compression", "value": "lzw", "type": "text" },
+            { "key": "nodata", "value": "0", "type": "text" },
+            { "key": "blocksize", "value": "256", "type": "text" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Upload - Reprojection",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/upload",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [] },
+            { "key": "conversion", "value": "reproject", "type": "text" },
+            { "key": "target_epsg", "value": "3857", "type": "text" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "List tasks (history)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/tasks"
+      }
+    },
+    {
+      "name": "Get task status",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/tasks/{{task_id}}"
+      }
+    },
+    {
+      "name": "Get task result",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/tasks/{{task_id}}/result"
+      }
+    },
+    {
+      "name": "Download output",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/download/{{task_id}}"
+      }
+    },
+    {
+      "name": "Delete one task",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/tasks/{{task_id}}"
+      }
+    },
+    {
+      "name": "Clear all history",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/api/tasks"
+      }
+    }
+  ]
+}

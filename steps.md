@@ -38,11 +38,10 @@ Status against `GIS_Data_Converter_MiniProject.pdf`.
 | Requirement | Status | Notes |
 |---|---|---|
 | Clear setup / installation instructions | ✅ | README Quick Start (`docker compose up -d`) |
-| API endpoint examples (curl / Postman) | ⚠️ | only in Swagger; no dedicated section |
+| API endpoint examples (curl / Postman) | ✅ | README §6 curl walkthrough + `postman_collection.json` |
 | Demonstration using sample datasets | ✅ | all 5 conversions verified |
 
-**Verdict:** mandatory complete - the one remaining required item is the curl/Postman
-examples doc (⚠️).
+**Verdict:** all mandatory + delivered-with requirements are complete.
 
 **Top 5 verified end-to-end (clean Docker build):**
 
@@ -65,7 +64,7 @@ examples doc (⚠️).
 | Async processing + progress | ✅ | Celery + Redis (progress via polling, not WS/SSE) |
 | Database for task metadata | ✅ | Postgres `tasks` table |
 | Conversion history endpoints | ✅ | `GET /api/tasks` |
-| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ✅ | **all 5** implemented (8 conversion types, both directions), verified end-to-end |
+| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ✅ | **all 5** implemented (9 conversion types; bidirectional except multiband, which the PDF specifies as one-way), verified end-to-end |
 | Simple user management (registration / login / API keys) | ⬜ | |
 
 ### Frontend
@@ -94,8 +93,7 @@ examples doc (⚠️).
 
 ### Required (to fully satisfy the PDF)
 
-- [ ] **API endpoint examples (curl / Postman)** - a "Delivered With" deliverable;
-      currently only inside Swagger, no dedicated section/collection.
+- [x] **API endpoint examples (curl / Postman)** - README §6 + `postman_collection.json`
 
 ### Optional / Bonus (not required)
 
@@ -106,7 +104,7 @@ examples doc (⚠️).
   - [x] GeoJSON ↔ GeoPackage
   - [x] GeoJSON ↔ KML/KMZ
   - [x] Multi-band GeoTIFF → single-band COGs (zipped)
-  - [x] GeoJSON → COCO JSON
+  - [x] GeoJSON ↔ COCO JSON
 - [ ] **Simple user management** (registration / login / API keys)
 
 **Frontend**
@@ -116,5 +114,5 @@ examples doc (⚠️).
 - [x] **Batch upload** - multi-file dropzone, uploads run concurrently, each gets its own task + live progress row
 - [x] **Advanced GDAL params** - compression (deflate/lzw/zstd/webp/jpeg/none), NoData value, COG tile block size; verified end-to-end against actual output files with rasterio
 
-> **All mandatory core functionality is complete and verified, plus all optional bonus features
-> except user management.** The only pending *required* item is the curl/Postman examples.
+> **All required deliverables are complete and verified**, plus all optional bonus features
+> except user management, which remains not started.

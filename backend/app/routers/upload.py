@@ -81,7 +81,7 @@ async def upload_file(
         tmp.write(data)
         tmp_path = Path(tmp.name)
     try:
-        if ext in {".geojson", ".json"}:
+        if ext in {".geojson", ".json"} and conversion.value in validation.GEOJSON_INPUT_CONVERSIONS:
             validation.validate_geojson(tmp_path)
         elif ext in {".tif", ".tiff"}:
             validation.validate_geotiff(tmp_path)

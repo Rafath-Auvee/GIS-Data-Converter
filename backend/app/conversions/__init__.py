@@ -88,6 +88,9 @@ def run(
     elif conversion is ConversionType.geojson_to_coco:
         out = output_dir / f"{stem}_coco.json"
         coco.geojson_to_coco(input_path, out)
+    elif conversion is ConversionType.coco_to_geojson:
+        out = output_dir / f"{stem}.geojson"
+        coco.coco_to_geojson(input_path, out)
 
     else:
         raise ValueError(f"Unsupported conversion: {conversion}")
