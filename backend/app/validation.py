@@ -1,4 +1,3 @@
-"""Lightweight upload validation: extensions, GeoJSON structure, GeoTIFF integrity."""
 import json
 from pathlib import Path
 
@@ -33,7 +32,6 @@ _GEOJSON_TYPES = {
 
 
 def validate_extension(conversion: str, filename: str) -> str:
-    """Check the file extension is accepted for the requested conversion."""
     ext = Path(filename).suffix.lower()
     allowed = ALLOWED_EXTENSIONS.get(conversion, set())
     if ext not in allowed:
@@ -45,7 +43,6 @@ def validate_extension(conversion: str, filename: str) -> str:
 
 
 def validate_geojson(path: Path) -> None:
-    """Minimal RFC 7946 structural check."""
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -58,7 +55,6 @@ def validate_geojson(path: Path) -> None:
 
 
 def validate_geotiff(path: Path) -> None:
-    """Ensure the GeoTIFF is readable and has raster bands + CRS metadata."""
     import rasterio
 
     try:

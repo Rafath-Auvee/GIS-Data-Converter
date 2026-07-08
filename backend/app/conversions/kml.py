@@ -1,4 +1,3 @@
-"""GeoJSON <-> KML/KMZ (Google Earth)."""
 import tempfile
 import zipfile
 from pathlib import Path
@@ -7,13 +6,11 @@ import geopandas as gpd
 
 
 def geojson_to_kml(src: Path, dst: Path) -> None:
-    """Convert GeoJSON to a KML file."""
     gdf = gpd.read_file(src)
     gdf.to_file(dst, driver="KML")
 
 
 def kml_to_geojson(src: Path, dst: Path) -> None:
-    """Convert a KML or KMZ to GeoJSON (WGS84)."""
     with tempfile.TemporaryDirectory() as tmp:
         path = src
         if src.suffix.lower() == ".kmz":

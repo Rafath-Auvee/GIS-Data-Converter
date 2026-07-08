@@ -1,4 +1,3 @@
-"""Upload endpoint: accept a file + conversion config, store it, and queue a task."""
 import tempfile
 import uuid
 from pathlib import Path
@@ -59,7 +58,6 @@ async def upload_file(
     ),
     db: Session = Depends(get_db),
 ):
-    """Validate the upload, store it in MinIO, create a task, and dispatch the worker."""
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided.")
 
@@ -79,7 +77,6 @@ async def upload_file(
             ),
         )
 
-    # Deep content validation: GeoJSON structure (RFC 7946) / GeoTIFF integrity + CRS.
     with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
         tmp.write(data)
         tmp_path = Path(tmp.name)

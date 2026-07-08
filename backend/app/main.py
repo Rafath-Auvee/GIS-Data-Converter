@@ -1,7 +1,3 @@
-"""FastAPI application entrypoint.
-
-Exposes the upload / task / download API and auto-generated OpenAPI docs at /docs.
-"""
 import time
 from contextlib import asynccontextmanager
 
@@ -27,7 +23,6 @@ async def lifespan(app: FastAPI):
 
     Base.metadata.create_all(bind=engine)
 
-    # Lightweight migration: add columns that were introduced after the table existed.
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS resolution double precision"))
         conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS band integer"))
@@ -75,5 +70,4 @@ app.include_router(download.router)
 
 @app.get("/health", tags=["system"])
 def health() -> dict[str, str]:
-    """Liveness probe."""
     return {"status": "ok"}

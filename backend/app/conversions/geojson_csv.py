@@ -1,4 +1,3 @@
-"""GeoJSON <-> CSV (mandatory conversion #1). Library: geopandas + shapely."""
 from pathlib import Path
 
 import geopandas as gpd
@@ -6,7 +5,6 @@ import pandas as pd
 
 
 def geojson_to_csv(src: Path, dst: Path) -> None:
-    """Export features to CSV: attribute columns plus a WKT geometry column."""
     gdf = gpd.read_file(src)
     geom_col = gdf.geometry.name
     df = pd.DataFrame(gdf.drop(columns=[geom_col]))
@@ -15,7 +13,6 @@ def geojson_to_csv(src: Path, dst: Path) -> None:
 
 
 def csv_to_geojson(src: Path, dst: Path) -> None:
-    """Build GeoJSON from a CSV with either a `geometry_wkt` column or lon/lat columns."""
     df = pd.read_csv(src)
     cols = {c.lower(): c for c in df.columns}
 

@@ -1,4 +1,3 @@
-"""COG / Raster -> GeoJSON (mandatory conversion #3). Library: rasterio.features."""
 from pathlib import Path
 
 import geopandas as gpd
@@ -7,7 +6,6 @@ from rasterio import features
 
 
 def raster_to_geojson(src: Path, dst: Path, band: int = 1) -> None:
-    """Polygonize non-zero raster regions into GeoJSON polygons (output in WGS84)."""
     with rasterio.open(src) as ds:
         data = ds.read(band)
         mask = data != 0

@@ -12,9 +12,7 @@ function FitBounds({ data }: { data: FeatureCollection }) {
     try {
       const bounds = L.geoJSON(data).getBounds();
       if (bounds.isValid()) map.fitBounds(bounds, { padding: [20, 20] });
-    } catch {
-      // ignore geometry that can't produce bounds
-    }
+    } catch {}
   }, [data, map]);
   return null;
 }

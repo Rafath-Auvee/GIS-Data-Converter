@@ -142,10 +142,6 @@ export function Dashboard() {
   const status = task.data?.status;
   const progress = task.data?.progress ?? 0;
 
-  // Drive the detailed log + toasts off task status/progress transitions.
-  // Accumulating a log from the polling query is an intentional external-sync
-  // pattern (dedup-guarded via lastKey, so no cascading renders).
-  /* eslint-disable react-hooks/set-state-in-effect */
   React.useEffect(() => {
     if (!taskId || !status) return;
     const key = `${status}:${progress}`;
@@ -168,7 +164,6 @@ export function Dashboard() {
       qc.invalidateQueries({ queryKey: ["tasks"] });
     }
   }, [status, progress, taskId, task.data, addLog, qc]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   function pickFiles(f: File[]) {
     setFiles(f);

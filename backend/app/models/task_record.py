@@ -1,4 +1,3 @@
-"""SQLAlchemy ORM model for persisted conversion tasks."""
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text

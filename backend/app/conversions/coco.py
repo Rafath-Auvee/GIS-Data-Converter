@@ -1,4 +1,3 @@
-"""GeoJSON -> COCO JSON (ML annotation format interoperability)."""
 import json
 from pathlib import Path
 
@@ -6,11 +5,6 @@ import geopandas as gpd
 
 
 def geojson_to_coco(src: Path, dst: Path) -> None:
-    """Export vector polygons as a COCO-format annotation file.
-
-    Coordinates are used as the image plane (data CRS). Each polygon becomes one
-    annotation with a bounding box + segmentation.
-    """
     gdf = gpd.read_file(src)
     minx, miny, maxx, maxy = gdf.total_bounds
 

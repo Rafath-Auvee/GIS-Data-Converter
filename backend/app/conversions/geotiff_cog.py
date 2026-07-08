@@ -1,4 +1,3 @@
-"""GeoTIFF -> COG (mandatory conversion #2). Library: rio-cogeo."""
 from pathlib import Path
 
 from rio_cogeo.cogeo import cog_translate
@@ -32,11 +31,6 @@ def geotiff_to_cog(
     nodata: float | None = None,
     blocksize: int | None = None,
 ) -> None:
-    """Translate a GeoTIFF into a Cloud-Optimized GeoTIFF.
-
-    Advanced GDAL controls: `compression` (deflate/lzw/zstd/webp/jpeg/none),
-    `nodata` value, and internal tile `blocksize` (multiple of 16).
-    """
     profile = _resolve_profile(compression, blocksize)
     cog_translate(
         str(src),

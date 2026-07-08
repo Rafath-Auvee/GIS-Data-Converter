@@ -1,4 +1,3 @@
-"""GeoJSON -> Raster (mandatory conversion #4). Library: rasterio.features."""
 from pathlib import Path
 
 import geopandas as gpd
@@ -16,11 +15,6 @@ def geojson_to_raster(
     nodata: float | None = None,
     compression: str | None = None,
 ) -> None:
-    """Burn vector features into a single-band uint8 GeoTIFF grid.
-
-    `resolution` is in the units of the data's CRS (degrees for EPSG:4326).
-    `nodata` sets the background/fill value; `compression` picks the GTiff codec.
-    """
     gdf = gpd.read_file(src)
     if gdf.crs is None:
         gdf = gdf.set_crs("EPSG:4326")

@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import type { FeatureCollection } from "geojson";
 
-// Leaflet needs `window`, so load the map only on the client.
 const MapInner = dynamic(() => import("./map-inner"), {
   ssr: false,
   loading: () => (

@@ -73,10 +73,10 @@ examples doc (⚠️).
 | Requirement | Status | Notes |
 |---|---|---|
 | Conversion history panel | ✅ | sidebar with re-download + delete |
-| Interactive map preview (GeoJSON / COG) | ⬜ | Leaflet installed, not built |
-| Attribute table preview (CSV / GeoJSON) | ⬜ | |
-| Batch upload | ⬜ | |
-| Advanced GDAL params (compression, NoData, tiling, resolution) | ⚠️ | resolution/band done; rest pending |
+| Interactive map preview (GeoJSON / COG) | ✅ | react-leaflet, dark CARTO basemap, auto-fit bounds |
+| Attribute table preview (CSV / GeoJSON) | ✅ | tabbed with map, sourced from GeoJSON properties or parsed CSV |
+| Batch upload | ✅ | multi-file dropzone, concurrent per-file tasks, live per-file progress |
+| Advanced GDAL params (compression, NoData, tiling, resolution) | ✅ | compression/nodata/blocksize wired through upload → worker → COG/rasterize |
 
 ---
 
@@ -111,10 +111,10 @@ examples doc (⚠️).
 
 **Frontend**
 
-- [ ] **Interactive map preview** (GeoJSON / COG on a Leaflet/WebGL map) - Leaflet already installed
-- [ ] **Attribute table preview** (CSV / GeoJSON)
-- [ ] **Batch upload** (multiple files at once)
-- [ ] **Advanced GDAL params** (compression, NoData, tiling) - resolution/band already done
+- [x] **Interactive map preview** - `react-leaflet` + dark CARTO basemap, renders GeoJSON output with auto-fit bounds
+- [x] **Attribute table preview** - table view of GeoJSON feature properties or parsed CSV rows (first 50 rows)
+- [x] **Batch upload** - multi-file dropzone, uploads run concurrently, each gets its own task + live progress row
+- [x] **Advanced GDAL params** - compression (deflate/lzw/zstd/webp/jpeg/none), NoData value, COG tile block size; verified end-to-end against actual output files with rasterio
 
-> **All mandatory core functionality is complete and verified.** The only pending
-> *required* item is the curl/Postman examples; everything else above is optional bonus.
+> **All mandatory core functionality is complete and verified, plus all optional bonus features
+> except user management.** The only pending *required* item is the curl/Postman examples.

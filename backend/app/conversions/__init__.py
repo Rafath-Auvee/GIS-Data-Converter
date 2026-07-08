@@ -1,8 +1,3 @@
-"""Conversion engine dispatcher for the Top 5 + secondary conversions.
-
-`run()` picks the right converter for a ConversionType, writes the output into
-`output_dir`, and returns the produced file's path.
-"""
 from pathlib import Path
 
 from app.conversions import (
@@ -34,11 +29,9 @@ def run(
     nodata: float | None = None,
     blocksize: int | None = None,
 ) -> Path:
-    """Run a conversion and return the path to the produced output file."""
     conversion = ConversionType(conversion)
     stem = input_path.stem
 
-    # --- Mandatory Top 5 ---
     if conversion is ConversionType.geojson_to_csv:
         out = output_dir / f"{stem}.csv"
         geojson_csv.geojson_to_csv(input_path, out)
@@ -71,7 +64,6 @@ def run(
             out = output_dir / f"{stem}_epsg{epsg}.geojson"
             reproject.reproject_vector(input_path, out, epsg)
 
-    # --- Bonus secondary conversions ---
     elif conversion is ConversionType.geojson_to_shapefile:
         out = output_dir / f"{stem}_shapefile.zip"
         shapefile.geojson_to_shapefile(input_path, out)
@@ -97,7 +89,7 @@ def run(
         out = output_dir / f"{stem}_coco.json"
         coco.geojson_to_coco(input_path, out)
 
-    else:  # pragma: no cover - all enum members handled above
+    else:
         raise ValueError(f"Unsupported conversion: {conversion}")
 
     return out

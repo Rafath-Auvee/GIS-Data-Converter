@@ -1,4 +1,3 @@
-"""Download endpoint: stream the converted output file from MinIO."""
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -22,7 +21,6 @@ router = APIRouter(prefix="/api", tags=["download"])
     },
 )
 def download_output(task_id: str, db: Session = Depends(get_db)):
-    """Stream the converted output file for a completed task from MinIO."""
     rec = db.get(TaskRecord, task_id)
     if rec is None or rec.status != "completed" or not rec.output_key:
         raise HTTPException(status_code=404, detail="No completed output for this task.")

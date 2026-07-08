@@ -1,4 +1,3 @@
-"""Celery application and the background conversion task."""
 import tempfile
 from pathlib import Path
 
@@ -15,7 +14,6 @@ celery_app = Celery(
 
 @celery_app.task(name="run_conversion")
 def run_conversion_task(task_id: str) -> None:
-    """Process one conversion job: download input, convert, upload output, update status."""
     from app.conversions import run as run_conversion
     from app.db import SessionLocal
     from app.models.task_record import TaskRecord

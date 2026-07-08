@@ -1,4 +1,3 @@
-"""Task status/type enums and API schemas (with Swagger examples)."""
 from datetime import datetime
 from enum import Enum
 
@@ -13,14 +12,12 @@ class TaskStatus(str, Enum):
 
 
 class ConversionType(str, Enum):
-    # Mandatory Top 5
     geojson_to_csv = "geojson_to_csv"
     csv_to_geojson = "csv_to_geojson"
     geotiff_to_cog = "geotiff_to_cog"
     raster_to_geojson = "raster_to_geojson"
     geojson_to_raster = "geojson_to_raster"
     reproject = "reproject"
-    # Bonus secondary conversions
     geojson_to_shapefile = "geojson_to_shapefile"
     shapefile_to_geojson = "shapefile_to_geojson"
     geojson_to_gpkg = "geojson_to_gpkg"
@@ -32,8 +29,6 @@ class ConversionType(str, Enum):
 
 
 class Task(BaseModel):
-    """Full API representation of a conversion job."""
-
     id: str
     status: TaskStatus
     conversion: ConversionType
@@ -64,8 +59,6 @@ class Task(BaseModel):
 
 
 class UploadAccepted(BaseModel):
-    """Returned by POST /api/upload once a task is queued."""
-
     task_id: str
     status: TaskStatus
 
@@ -80,8 +73,6 @@ class UploadAccepted(BaseModel):
 
 
 class TaskResult(BaseModel):
-    """Result metadata for a completed task."""
-
     task_id: str
     status: TaskStatus
     output_filename: str | None = None

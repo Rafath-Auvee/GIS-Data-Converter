@@ -1,4 +1,3 @@
-"""GeoJSON <-> Shapefile (ESRI). Shapefiles are multi-file, so they travel as a .zip."""
 import tempfile
 import zipfile
 from pathlib import Path
@@ -7,7 +6,6 @@ import geopandas as gpd
 
 
 def geojson_to_shapefile(src: Path, dst: Path) -> None:
-    """Convert GeoJSON to a zipped ESRI Shapefile (.shp/.shx/.dbf/.prj inside a .zip)."""
     gdf = gpd.read_file(src)
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
@@ -19,7 +17,6 @@ def geojson_to_shapefile(src: Path, dst: Path) -> None:
 
 
 def shapefile_to_geojson(src: Path, dst: Path) -> None:
-    """Convert a zipped Shapefile to GeoJSON (WGS84)."""
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
         with zipfile.ZipFile(src) as zf:

@@ -99,8 +99,6 @@ export function ResultPreview({
 }) {
   const ext = (filename ?? "").toLowerCase().split(".").pop() ?? "";
   const isCsv = ext === "csv";
-  // .geojson/.json outputs *may* be previewable; COCO also uses .json, so
-  // loadPreview confirms it is really a FeatureCollection.
   const previewable = isCsv || ext === "geojson" || ext === "json";
 
   const [tab, setTab] = React.useState<Tab | null>(null);

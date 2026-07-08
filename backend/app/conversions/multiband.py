@@ -1,4 +1,3 @@
-"""Multi-band GeoTIFF -> individual single-band COGs (bundled as a .zip)."""
 import tempfile
 import zipfile
 from pathlib import Path
@@ -9,7 +8,6 @@ from rio_cogeo.profiles import cog_profiles
 
 
 def multiband_to_cogs(src: Path, dst: Path) -> None:
-    """Split each band of a raster into its own Cloud-Optimized GeoTIFF; zip them."""
     profile = cog_profiles.get("deflate")
     with tempfile.TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)

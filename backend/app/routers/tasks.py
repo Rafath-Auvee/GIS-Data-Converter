@@ -1,4 +1,3 @@
-"""Task endpoints: fetch status and result metadata."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -31,7 +30,6 @@ def _to_task(rec: TaskRecord) -> Task:
     summary="List recent tasks (conversion history)",
 )
 def list_tasks(db: Session = Depends(get_db), limit: int = 100):
-    """Return recent conversion tasks, newest first (for the history panel)."""
     recs = (
         db.query(TaskRecord)
         .order_by(TaskRecord.created_at.desc())
@@ -48,7 +46,6 @@ def list_tasks(db: Session = Depends(get_db), limit: int = 100):
     responses={404: {"description": "Task not found."}},
 )
 def get_task(task_id: str, db: Session = Depends(get_db)):
-    """Return current status and metadata for a conversion task."""
     rec = db.get(TaskRecord, task_id)
     if rec is None:
         raise HTTPException(status_code=404, detail="Task not found.")
@@ -62,7 +59,6 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
     responses={404: {"description": "Task not found."}},
 )
 def get_task_result(task_id: str, db: Session = Depends(get_db)):
-    """Return result metadata (output filename, size, download URL) for a task."""
     rec = db.get(TaskRecord, task_id)
     if rec is None:
         raise HTTPException(status_code=404, detail="Task not found.")
@@ -88,7 +84,6 @@ def _cleanup_objects(rec: TaskRecord) -> None:
     summary="Clear all tasks (delete entire history)",
 )
 def clear_tasks(db: Session = Depends(get_db)):
-    """Delete every task and its stored files."""
     for rec in db.query(TaskRecord).all():
         _cleanup_objects(rec)
         db.delete(rec)
@@ -102,7 +97,6 @@ def clear_tasks(db: Session = Depends(get_db)):
     responses={404: {"description": "Task not found."}},
 )
 def delete_task(task_id: str, db: Session = Depends(get_db)):
-    """Delete a single task and its stored files."""
     rec = db.get(TaskRecord, task_id)
     if rec is None:
         raise HTTPException(status_code=404, detail="Task not found.")
