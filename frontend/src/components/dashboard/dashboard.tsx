@@ -24,8 +24,9 @@ import { Button } from "@/components/ui/button";
 import { FileDropzone } from "@/components/converter/file-dropzone";
 import { ConfigPanel } from "@/components/converter/config-panel";
 import { StatusDashboard } from "@/components/converter/status-dashboard";
-import { ResultCard } from "@/components/converter/result-card";
+import { ResultPreview } from "@/components/preview/result-preview";
 import { HistoryList } from "./history-list";
+import { BatchProgress } from "./batch-progress";
 import { ActivityLog, type LogEntry } from "./activity-log";
 
 export function Dashboard() {
@@ -35,15 +36,22 @@ export function Dashboard() {
     targetEpsg,
     resolution,
     band,
+    compression,
+    nodata,
+    blocksize,
     taskId,
     setConversion,
     setTargetEpsg,
     setResolution,
     setBand,
+    setCompression,
+    setNodata,
+    setBlocksize,
     setTaskId,
   } = useConverterStore();
 
-  const [file, setFile] = React.useState<File | null>(null);
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [batchIds, setBatchIds] = React.useState<string[]>([]);
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
   const toastId = React.useRef<string | undefined>(undefined);
   const lastKey = React.useRef<string>("");
@@ -56,26 +64,57 @@ export function Dashboard() {
   );
 
   const upload = useMutation({
-    mutationFn: () => {
-      if (!file) throw new Error("Please choose a file first.");
-      return uploadFile({
-        file,
+    mutationFn: async () => {
+      if (files.length === 0) throw new Error("Please choose at least one file.");
+      const isCog = conversion === "geotiff_to_cog";
+      const isRasterize = conversion === "geojson_to_raster";
+      const cfg = {
         conversion,
         targetEpsg: conversion === "reproject" ? targetEpsg ?? undefined : undefined,
-        resolution: conversion === "geojson_to_raster" ? resolution ?? undefined : undefined,
+        resolution: isRasterize ? resolution ?? undefined : undefined,
         band: conversion === "raster_to_geojson" ? band ?? undefined : undefined,
-      });
+        compression: isCog || isRasterize ? compression : undefined,
+        nodata: isCog || isRasterize ? nodata ?? undefined : undefined,
+        blocksize: isCog ? blocksize : undefined,
+      };
+      const batch = files.length > 1;
+      const settled = await Promise.allSettled(
+        files.map((f) => uploadFile({ file: f, ...cfg })),
+      );
+      const ids = settled.flatMap((s) => (s.status === "fulfilled" ? [s.value.task_id] : []));
+      const errors = settled.flatMap((s, i) =>
+        s.status === "rejected" ? [`${files[i].name}: ${(s.reason as Error).message}`] : [],
+      );
+      if (ids.length === 0) throw new Error(errors[0] ?? "All uploads failed.");
+      return { ids, errors, batch };
     },
     onMutate: () => {
       setLogs([]);
       lastKey.current = "";
-      addLog(`Uploading "${file?.name}" for ${conversionLabel(conversion)}`);
-      toastId.current = toast.loading("Uploading file…");
+      setBatchIds([]);
+      const n = files.length;
+      addLog(`Uploading ${n} file${n > 1 ? "s" : ""} for ${conversionLabel(conversion)}`);
+      toastId.current = toast.loading(n > 1 ? `Uploading ${n} files…` : "Uploading file…");
     },
-    onSuccess: (res) => {
-      setTaskId(res.task_id);
-      addLog(`Task created (${res.task_id.slice(0, 8)}…), queued`, "success");
-      toast.loading("Queued for conversion…", { id: toastId.current });
+    onSuccess: ({ ids, errors, batch }) => {
+      errors.forEach((e) => addLog(e, "error"));
+      if (!batch) {
+        setTaskId(ids[0]);
+        setBatchIds([]);
+        addLog(`Task created (${ids[0].slice(0, 8)}…), queued`, "success");
+        toast.loading("Queued for conversion…", { id: toastId.current });
+      } else {
+        setTaskId(null);
+        setBatchIds(ids);
+        addLog(`Created ${ids.length} task${ids.length > 1 ? "s" : ""}, queued`, "success");
+        if (errors.length) {
+          toast.error(`Queued ${ids.length}, ${errors.length} failed to upload`, {
+            id: toastId.current,
+          });
+        } else {
+          toast.success(`Queued ${ids.length} conversions`, { id: toastId.current });
+        }
+      }
       qc.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (err) => {
@@ -131,30 +170,40 @@ export function Dashboard() {
   }, [status, progress, taskId, task.data, addLog, qc]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  function pickFile(f: File | null) {
-    setFile(f);
+  function pickFiles(f: File[]) {
+    setFiles(f);
     setTaskId(null);
+    setBatchIds([]);
     setLogs([]);
   }
 
   function newConversion() {
-    setFile(null);
+    setFiles([]);
     setTaskId(null);
+    setBatchIds([]);
     setLogs([]);
     upload.reset();
   }
 
   function selectHistory(t: Task) {
     setTaskId(t.id);
+    setBatchIds([]);
     setLogs([]);
     lastKey.current = "";
   }
 
   function handleDeleted(id: string | "all") {
-    if (id === "all" || id === taskId) {
+    if (id === "all") {
+      setTaskId(null);
+      setBatchIds([]);
+      setLogs([]);
+      return;
+    }
+    if (id === taskId) {
       setTaskId(null);
       setLogs([]);
     }
+    setBatchIds((b) => b.filter((x) => x !== id));
   }
 
   const busy = upload.isPending || status === "pending" || status === "processing";
@@ -190,54 +239,76 @@ export function Dashboard() {
           <header>
             <h1 className="text-2xl font-bold tracking-tight">GIS Data Converter</h1>
             <p className="text-sm text-muted-foreground">
-              Upload a geospatial file, choose a conversion, and download the result.
+              Upload one or more geospatial files, choose a conversion, and download the results.
             </p>
           </header>
 
           <Card>
             <CardContent className="flex flex-col gap-6 pt-6">
               <FileDropzone
-                file={file}
+                files={files}
                 accept={ACCEPTED_EXTENSIONS[conversion]}
                 disabled={busy}
-                onFile={pickFile}
+                onFiles={pickFiles}
               />
               <ConfigPanel
                 conversion={conversion}
                 targetEpsg={targetEpsg}
                 resolution={resolution}
                 band={band}
+                compression={compression}
+                nodata={nodata}
+                blocksize={blocksize}
                 disabled={busy}
                 onConversion={setConversion}
                 onEpsg={setTargetEpsg}
                 onResolution={setResolution}
                 onBand={setBand}
+                onCompression={setCompression}
+                onNodata={setNodata}
+                onBlocksize={setBlocksize}
               />
               <div className="flex justify-end">
-                <Button onClick={() => upload.mutate()} disabled={!file || busy}>
-                  {busy ? "Converting…" : "Convert"}
+                <Button onClick={() => upload.mutate()} disabled={files.length === 0 || busy}>
+                  {busy
+                    ? "Converting…"
+                    : files.length > 1
+                      ? `Convert ${files.length} files`
+                      : "Convert"}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {taskId && (
+          {batchIds.length > 0 ? (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Activity</CardTitle>
+                <CardTitle className="text-base">Batch conversion</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
-                <StatusDashboard status={status} progress={progress} error={task.data?.error} />
-                {status === "completed" && (
-                  <ResultCard
-                    filename={task.data?.output_filename ?? null}
-                    size={task.data?.output_size ?? null}
-                    href={downloadUrl(taskId)}
-                  />
-                )}
+                <BatchProgress taskIds={batchIds} />
                 <ActivityLog logs={logs} />
               </CardContent>
             </Card>
+          ) : (
+            taskId && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Activity</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  <StatusDashboard status={status} progress={progress} error={task.data?.error} />
+                  {status === "completed" && (
+                    <ResultPreview
+                      filename={task.data?.output_filename ?? null}
+                      size={task.data?.output_size ?? null}
+                      href={downloadUrl(taskId)}
+                    />
+                  )}
+                  <ActivityLog logs={logs} />
+                </CardContent>
+              </Card>
+            )
           )}
         </div>
       </main>

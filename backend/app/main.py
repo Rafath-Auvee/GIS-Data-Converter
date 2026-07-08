@@ -31,6 +31,9 @@ async def lifespan(app: FastAPI):
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS resolution double precision"))
         conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS band integer"))
+        conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS compression varchar"))
+        conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS nodata double precision"))
+        conn.execute(text("ALTER TABLE tasks ADD COLUMN IF NOT EXISTS blocksize integer"))
 
     for attempt in range(10):
         try:

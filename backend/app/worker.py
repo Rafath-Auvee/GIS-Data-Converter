@@ -46,6 +46,9 @@ def run_conversion_task(task_id: str) -> None:
                 target_epsg=task.target_epsg,
                 resolution=task.resolution,
                 band=task.band,
+                compression=task.compression,
+                nodata=task.nodata,
+                blocksize=task.blocksize,
             )
 
             task.progress = 80

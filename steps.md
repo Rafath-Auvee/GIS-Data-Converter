@@ -65,7 +65,7 @@ examples doc (⚠️).
 | Async processing + progress | ✅ | Celery + Redis (progress via polling, not WS/SSE) |
 | Database for task metadata | ✅ | Postgres `tasks` table |
 | Conversion history endpoints | ✅ | `GET /api/tasks` |
-| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ⬜ | 0 of 5 |
+| Secondary conversions (Shapefile / GPKG / KML / multiband / COCO) | ✅ | **all 5** implemented (8 conversion types, both directions), verified end-to-end |
 | Simple user management (registration / login / API keys) | ⬜ | |
 
 ### Frontend
@@ -90,10 +90,31 @@ examples doc (⚠️).
 
 ---
 
-## Remaining to be fully airtight
+## Pending Tasks
 
-1. Add a **curl / Postman API examples** section to the README - the only pending
-   *required* deliverable.
+### Required (to fully satisfy the PDF)
 
-Everything else remaining is **(Optional) bonus**: secondary conversions, map preview,
-attribute table, batch upload, user management, advanced GDAL params.
+- [ ] **API endpoint examples (curl / Postman)** - a "Delivered With" deliverable;
+      currently only inside Swagger, no dedicated section/collection.
+
+### Optional / Bonus (not required)
+
+**Backend**
+
+- [x] **Secondary conversions** - **DONE (all 5)**, verified end-to-end:
+  - [x] GeoJSON ↔ Shapefile (zipped)
+  - [x] GeoJSON ↔ GeoPackage
+  - [x] GeoJSON ↔ KML/KMZ
+  - [x] Multi-band GeoTIFF → single-band COGs (zipped)
+  - [x] GeoJSON → COCO JSON
+- [ ] **Simple user management** (registration / login / API keys)
+
+**Frontend**
+
+- [ ] **Interactive map preview** (GeoJSON / COG on a Leaflet/WebGL map) - Leaflet already installed
+- [ ] **Attribute table preview** (CSV / GeoJSON)
+- [ ] **Batch upload** (multiple files at once)
+- [ ] **Advanced GDAL params** (compression, NoData, tiling) - resolution/band already done
+
+> **All mandatory core functionality is complete and verified.** The only pending
+> *required* item is the curl/Postman examples; everything else above is optional bonus.

@@ -11,30 +11,47 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const COMPRESSIONS = ["deflate", "lzw", "zstd", "webp", "jpeg", "none"];
+const BLOCK_SIZES = [128, 256, 512, 1024];
+
 export function ConfigPanel({
   conversion,
   targetEpsg,
   resolution,
   band,
+  compression,
+  nodata,
+  blocksize,
   disabled,
   onConversion,
   onEpsg,
   onResolution,
   onBand,
+  onCompression,
+  onNodata,
+  onBlocksize,
 }: {
   conversion: ConversionType;
   targetEpsg: number | null;
   resolution: number | null;
   band: number | null;
+  compression: string;
+  nodata: number | null;
+  blocksize: number;
   disabled?: boolean;
   onConversion: (c: ConversionType) => void;
   onEpsg: (v: number | null) => void;
   onResolution: (v: number | null) => void;
   onBand: (v: number | null) => void;
+  onCompression: (v: string) => void;
+  onNodata: (v: number | null) => void;
+  onBlocksize: (v: number) => void;
 }) {
   const isReproject = conversion === "reproject";
   const isRasterize = conversion === "geojson_to_raster";
   const isPolygonize = conversion === "raster_to_geojson";
+  const isCog = conversion === "geotiff_to_cog";
+  const showAdvanced = isCog || isRasterize;
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -101,6 +118,70 @@ export function ConfigPanel({
             disabled={disabled}
             onChange={(e) => onBand(e.target.value ? Number(e.target.value) : null)}
           />
+        </div>
+      )}
+
+      {showAdvanced && (
+        <div className="flex flex-col gap-4 rounded-lg border border-dashed p-4 sm:col-span-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Advanced GDAL options
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="compression">Compression</Label>
+              <Select
+                value={compression}
+                onValueChange={(v) => onCompression(v ?? "deflate")}
+                disabled={disabled}
+              >
+                <SelectTrigger id="compression" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMPRESSIONS.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nodata">NoData value</Label>
+              <Input
+                id="nodata"
+                type="number"
+                step="1"
+                placeholder="none"
+                value={nodata ?? ""}
+                disabled={disabled}
+                onChange={(e) => onNodata(e.target.value ? Number(e.target.value) : null)}
+              />
+            </div>
+
+            {isCog && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="blocksize">Tile block size</Label>
+                <Select
+                  value={String(blocksize)}
+                  onValueChange={(v) => onBlocksize(Number(v ?? blocksize))}
+                  disabled={disabled}
+                >
+                  <SelectTrigger id="blocksize" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BLOCK_SIZES.map((b) => (
+                      <SelectItem key={b} value={String(b)}>
+                        {b} px
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

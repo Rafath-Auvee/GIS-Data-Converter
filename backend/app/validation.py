@@ -9,6 +9,14 @@ ALLOWED_EXTENSIONS: dict[str, set[str]] = {
     "raster_to_geojson": {".tif", ".tiff"},
     "geojson_to_raster": {".geojson", ".json"},
     "reproject": {".geojson", ".json", ".gpkg", ".kml", ".tif", ".tiff"},
+    "geojson_to_shapefile": {".geojson", ".json"},
+    "shapefile_to_geojson": {".zip"},
+    "geojson_to_gpkg": {".geojson", ".json"},
+    "gpkg_to_geojson": {".gpkg"},
+    "geojson_to_kml": {".geojson", ".json"},
+    "kml_to_geojson": {".kml", ".kmz"},
+    "multiband_to_cogs": {".tif", ".tiff"},
+    "geojson_to_coco": {".geojson", ".json"},
 }
 
 _GEOJSON_TYPES = {

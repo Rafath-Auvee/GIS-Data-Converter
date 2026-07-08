@@ -44,6 +44,19 @@ async def upload_file(
     band: int | None = Form(
         None, description="Raster band to vectorize (Raster -> GeoJSON).", examples=[1]
     ),
+    compression: str | None = Form(
+        None,
+        description="GDAL compression codec for raster output (deflate/lzw/zstd/webp/jpeg/none).",
+        examples=["deflate"],
+    ),
+    nodata: float | None = Form(
+        None, description="NoData value for raster output.", examples=[0]
+    ),
+    blocksize: int | None = Form(
+        None,
+        description="Internal COG tile block size, a multiple of 16 (GeoTIFF -> COG).",
+        examples=[512],
+    ),
     db: Session = Depends(get_db),
 ):
     """Validate the upload, store it in MinIO, create a task, and dispatch the worker."""
@@ -92,6 +105,9 @@ async def upload_file(
         target_epsg=target_epsg,
         resolution=resolution,
         band=band,
+        compression=compression,
+        nodata=nodata,
+        blocksize=blocksize,
         input_key=input_key,
         progress=0,
     )

@@ -13,12 +13,22 @@ class TaskStatus(str, Enum):
 
 
 class ConversionType(str, Enum):
+    # Mandatory Top 5
     geojson_to_csv = "geojson_to_csv"
     csv_to_geojson = "csv_to_geojson"
     geotiff_to_cog = "geotiff_to_cog"
     raster_to_geojson = "raster_to_geojson"
     geojson_to_raster = "geojson_to_raster"
     reproject = "reproject"
+    # Bonus secondary conversions
+    geojson_to_shapefile = "geojson_to_shapefile"
+    shapefile_to_geojson = "shapefile_to_geojson"
+    geojson_to_gpkg = "geojson_to_gpkg"
+    gpkg_to_geojson = "gpkg_to_geojson"
+    geojson_to_kml = "geojson_to_kml"
+    kml_to_geojson = "kml_to_geojson"
+    multiband_to_cogs = "multiband_to_cogs"
+    geojson_to_coco = "geojson_to_coco"
 
 
 class Task(BaseModel):
