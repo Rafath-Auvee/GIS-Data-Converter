@@ -4,6 +4,11 @@ from pathlib import Path
 from celery import Celery
 
 from app.config import settings
+from app.conversions import run as run_conversion
+from app.db import SessionLocal
+from app.models.task_record import TaskRecord
+from app.services import storage
+
 
 celery_app = Celery(
     "gis_converter",
@@ -14,10 +19,7 @@ celery_app = Celery(
 
 @celery_app.task(name="run_conversion")
 def run_conversion_task(task_id: str) -> None:
-    from app.conversions import run as run_conversion
-    from app.db import SessionLocal
-    from app.models.task_record import TaskRecord
-    from app.services import storage
+
 
     db = SessionLocal()
     try:
