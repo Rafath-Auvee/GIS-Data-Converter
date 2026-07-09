@@ -1,275 +1,276 @@
-# GIS Data Converter
+# 🗺️ GIS Data Converter
 
-A web-based geospatial data conversion service. Users upload files in one format,
-configure conversion options (target format, coordinate system, parameters), and
-download the processed results.
+> Upload a geospatial file → pick a conversion → download the result.
+> A web app that converts between **15 geospatial formats** (vector + raster), with live
+> progress, map preview, and conversion history.
 
-> **Status:** All mandatory backend + frontend features are implemented and **verified
-> end-to-end on Docker** - all **5 mandatory** conversions plus **all 5 bonus** secondary
-> conversions (15 conversion directions in total) run and download successfully. A small,
-> committed sample input for every one lives in [`test cases/`](test%20cases/). See
-> [steps.md](steps.md) for the full requirements tracker.
+![status](https://img.shields.io/badge/status-all%2015%20conversions%20verified-brightgreen)
+![backend](https://img.shields.io/badge/backend-FastAPI%20%2B%20Celery-009688)
+![frontend](https://img.shields.io/badge/frontend-Next.js%2016-black)
+![cost](https://img.shields.io/badge/cost-100%25%20free%20%26%20local-blue)
 
-## Quick start
+**✅ Every mandatory + bonus conversion is implemented and verified end-to-end on real data.**
+See the full tracker in [steps.md](steps.md).
+
+---
+
+## ⚡ Quick start
 
 ```bash
-docker compose up -d          # build + start all 6 services
+cp .env.example .env       # first time only
+docker compose up -d       # build + start all 7 services
 ```
 
-Then open **<http://localhost:3000>** (UI), **<http://localhost:8000/docs>** (API docs),
-**<http://localhost:9001>** (MinIO console), or **<http://localhost:5050>** (pgAdmin).
+| Open | URL | Login |
+|------|-----|-------|
+| 🖥️ **App** | <http://localhost:3000> | — |
+| 📘 **API docs** (Swagger) | <http://localhost:8000/docs> | — |
+| 🪣 **MinIO** (file storage) | <http://localhost:9001> | `minioadmin` / `minioadmin` |
+| 🐘 **pgAdmin** (database) | <http://localhost:5050> | `admin@admin.com` / `admin` |
 
 ---
 
-## 1. Final Stack
+## 🧭 How it works
 
-### Frontend
-- **Next.js 16** (App Router) + React 19
-- **shadcn/ui** (Base UI) + **Tailwind v4** - component library & styling
-- **react-hot-toast** - toast notifications (loading / progress / complete / error)
-- **TanStack Query** - server state / task-status polling
-- **Zustand** - UI state
-- **Leaflet** + **react-leaflet** - interactive map preview of **GeoJSON** output (bonus)
-- **PapaParse** - client-side CSV parsing for the attribute-table preview
+You never wait on the web request — heavy conversions run in the background and the UI polls for progress.
 
-**UI structure:** reusable primitives in `frontend/src/components/ui/` (shadcn);
-feature components in `frontend/src/components/` - `converter/` (`file-dropzone`,
-`config-panel`, `status-dashboard`), `preview/` (`result-preview`, `map-preview`,
-`attribute-table`) and `dashboard/` (`dashboard`, `history-list`, `batch-progress`,
-`activity-log`). `app/page.tsx` renders the `Dashboard` orchestrator.
-
-### Backend
-- **FastAPI + Pydantic v2** - API + auto OpenAPI/Swagger docs
-- **Conversion engine:** rasterio, rio-cogeo, geopandas, shapely, pyproj, fiona (built on **GDAL**)
-
-### Async Processing
-- **Celery** workers + **Redis** broker - long-running jobs + real-time progress updates
-
-### Storage
-- **MinIO** (S3-compatible) - stores uploaded inputs + converted outputs
-
-### Database
-- **Postgres + PostGIS** - task metadata & conversion history (browsable via **pgAdmin**)
-
-### Orchestration
-- **docker-compose** - one-command dev; also solves GDAL-on-Windows install issues
-
-> **Not implemented (optional bonus):** simple user management (registration / login /
-> API keys) and a dedicated COG tile server (e.g. TiTiler) are the only PDF bonus items
-> not built. The map preview renders **GeoJSON** output only; raster/COG outputs are
-> downloaded rather than tiled in-browser.
-
-> **Cost:** 100% free & open-source. Everything runs locally in Docker - no cloud accounts or paid services required.
-
----
-
-## 2. Project Tasks
-
-### Backend (Mandatory)
-- **File Upload API** - accept uploads via `multipart/form-data`, support multiple geospatial formats
-- **Task Management**
-  - Generate a unique task ID per conversion job
-  - Maintain and expose task status: `pending`, `processing`, `completed`, `failed`
-  - Endpoint to fetch conversion results
-  - Download endpoint for the output file
-- **Conversion Engine** - implement the Top 5 priority conversions (see section 3)
-- **Data Validation**
-  - Validate uploaded file formats and extensions
-  - Validate GeoJSON structure (RFC 7946 compliance)
-  - Validate GeoTIFF integrity and read coordinate system metadata
-- **API Documentation** - machine-readable (OpenAPI/Swagger)
-
-### Frontend (Mandatory)
-- **Upload Interface** - drag-and-drop or click-to-select; visual feedback for accepted file types/sizes
-- **Configuration Panel** - input/output format dropdowns, EPSG code selector, basic params (rasterization resolution, band selection)
-- **Progress & Status Dashboard** - real-time task status + visual progress bar
-- **Results Section** - prominent download button, output file name and size
-- **Error Handling** - clear, user-friendly error messages
-
-### Backend (Bonus / Optional)
-- Secondary conversions: GeoJSON ↔ Shapefile, GeoJSON ↔ GeoPackage, GeoJSON ↔ KML/KMZ, multi-band GeoTIFF → single-band COGs, GeoJSON ↔ COCO JSON
-- Persistence layer - store task metadata + conversion history endpoints
-- Simple user management (registration, login, API keys)
-- Asynchronous processing - background worker queue with real-time progress (WebSocket/SSE)
-
-### Frontend (Bonus / Optional)
-- Interactive map preview (Leaflet) for GeoJSON/COG output + attribute tables
-- Batch upload - multiple files converted simultaneously
-- History panel - list past tasks, re-download without re-uploading
-- Advanced GDAL-like parameters (compression, NoData values, output resolution, tiling)
-
-### Delivered With
-- Clear setup/installation instructions
-- API endpoint examples (curl/Postman) - see [section 6](#6-api-endpoint-examples-curl--postman)
-- Demonstration using the provided sample datasets
-
----
-
-## 3. The 5 Mandatory Conversions → Library Mapping
-
-| # | Conversion | Description | Library |
-|---|------------|-------------|---------|
-| 1 | **GeoJSON ↔ CSV** | Export features/properties as spreadsheets; import features from tabular data with coordinates | geopandas + shapely (WKT) |
-| 2 | **GeoTIFF → COG** | Optimize rasters into Cloud-Optimized GeoTIFF for fast cloud tile serving | rio-cogeo |
-| 3 | **COG / Raster → GeoJSON** | Vectorize raster features (polygonize binary masks) | rasterio (`features.shapes`) |
-| 4 | **GeoJSON → Raster** | Rasterize vector features into a grid (for ML datasets) | rasterio (`features.rasterize`) |
-| 5 | **Reprojection (EPSG)** | Convert spatial data between coordinate reference systems (e.g. WGS84 → Web Mercator) | geopandas `to_crs` (vector) / rasterio `warp` (raster) + pyproj |
-
----
-
-## 4. Glossary
-
-### General
-
-| Term | Meaning |
-|------|---------|
-| **GIS** | Geographic Information System; software for capturing, storing, analyzing, and visualizing spatial/map data. |
-
-### Formats & Tile Server
-
-| Term | Meaning |
-|------|---------|
-| **GeoJSON** | JSON format for storing vector geographic features (points, lines, polygons) with properties. |
-| **GeoTIFF** | A TIFF image with embedded geographic/coordinate info (used for satellite/raster imagery). |
-| **TIFF** | Tagged Image File Format, a general high-quality raster image format (no geo info by itself). |
-| **COG** | Cloud-Optimized GeoTIFF; a GeoTIFF structured for fast, partial streaming of tiles over HTTP from cloud storage. |
-| **TiTiler** | A FastAPI-based server that dynamically renders map tiles from COGs for web maps. |
-
-### Python Libraries
-
-| Library | Purpose |
-|---------|---------|
-| **rasterio** | Read/write & process raster data. |
-| **geopandas** | Pandas for vector geo-data. |
-| **rio-cogeo** | Create/validate Cloud-Optimized GeoTIFFs. |
-| **shapely** | Geometry operations (points, lines, polygons). |
-| **pyproj** | Coordinate-system reprojection (EPSG transforms). |
-| **fiona** | Read/write vector file formats (Shapefile, GeoJSON, etc.). |
-
-### Core Engine & Database
-
-| Term | Meaning |
-|------|---------|
-| **GDAL** | Geospatial Data Abstraction Library; the core C/C++ engine that reads/writes/converts 200+ geo formats (all the libraries above wrap it). |
-| **PostGIS** | A PostgreSQL extension that adds spatial data types, indexing, and geographic queries to the database. |
-
----
-
-## 5. Common Docker Commands
-
-Run these from the project root (where `docker-compose.yml` lives). On a fresh clone, first copy `.env.example` to `.env`.
-
-```bash
-docker compose up --build       # build + start everything (foreground, shows logs)
-docker compose up -d            # start in background (detached)
-docker compose ps               # list running services + health
-docker compose logs -f backend  # tail one service's logs
-docker compose down             # stop + remove containers (keeps volumes/data)
-docker compose down -v          # also delete volumes (wipes db + files)
-docker compose build backend    # rebuild just one service after dep changes
+```
+   YOU (browser)
+      │  1. POST /api/upload  (file + conversion + options)
+      ▼
+ ┌─────────────┐   2. validate → store input in MinIO → save Task row (Postgres)
+ │   BACKEND   │   3. drop job on the Redis queue
+ │  (FastAPI)  │───────────────► returns { task_id, "pending" }   (instant, 202)
+ └─────────────┘
+      │  4. UI polls  GET /api/tasks/{id}  every 1s
+      │
+      ▼                          ┌─────────────┐  5. pull input from MinIO
+  status / progress  ◄───────────│   WORKER    │     run converter (GDAL libs)
+  (pending→…→completed)          │  (Celery)   │     push output to MinIO
+      │                          └─────────────┘     mark task "completed"
+      │  6. when completed:
+      ▼
+  GET /api/download/{id}  ◄────── streams the output file ← MinIO
+      │
+      ▼
+  🗺️ Map / 📋 Table / ⬇️ Download   (preview depends on output type)
 ```
 
-Once running:
+---
 
-- Frontend app: <http://localhost:3000>
-- API docs (Swagger): <http://localhost:8000/docs>
-- MinIO console: <http://localhost:9001> (login: `minioadmin` / `minioadmin`)
-- pgAdmin: <http://localhost:5050> (login: `admin@admin.com` / `admin`)
+## 🏗️ Architecture (7 Docker services)
+
+```
+                        ┌──────────────┐
+   browser  ──HTTP──►   │   frontend   │   Next.js 16 · :3000
+                        └──────┬───────┘
+                               │ REST (JSON)
+                        ┌──────▼───────┐        ┌──────────┐
+                        │   backend    │──jobs─►│  redis   │  queue
+                        │   FastAPI    │◄───────│          │
+                        │    :8000     │        └────┬─────┘
+                        └──┬────────┬──┘             │ dequeues
+                    SQL    │        │  S3 API   ┌─────▼──────┐
+                           │        │           │   worker   │  Celery
+                    ┌──────▼──┐  ┌──▼──────┐    │ (converts) │
+                    │   db    │  │  minio  │◄───┤ same SQL + │
+                    │ Postgres│  │   S3    │───►│  S3 access │
+                    │ +PostGIS│  │ :9000/1 │    └────────────┘
+                    └────┬────┘  └─────────┘
+                         │
+                    ┌────▼────┐
+                    │ pgadmin │  inspect the db · :5050
+                    └─────────┘
+```
+
+- **backend** & **worker** run the *same* image, different command
+  (`uvicorn` vs `celery`) — that's why backend hot-reloads but the worker needs a restart.
+- **redis** = the job queue (backend drops jobs, worker picks them up).
+- **minio** = S3-style object storage for input + output files.
+- **db** = Postgres (+PostGIS) storing every task; browse it in **pgAdmin**.
 
 ---
 
-## 6. API Endpoint Examples (curl / Postman)
+## 🔄 The conversions
 
-A ready-made Postman collection is at [`postman_collection.json`](postman_collection.json)
-(import it, then set the `base_url` and `task_id` collection variables). Or use curl:
+**5 mandatory + 5 bonus pairs = 15 directions**, all verified. Preview depends on the *output* type:
+
+```
+ output .geojson  →  🗺️ Map + 📋 Table
+ output .csv      →  📋 Table
+ output .tif/.zip/.gpkg/.kml/.json(coco)  →  ⬇️ Download only
+```
+
+### ⭐ Mandatory (Top 5)
+
+| Conversion | Does what | Library | Preview |
+|---|---|---|---|
+| **GeoJSON ↔ CSV** | features ⇄ spreadsheet (WKT / lat-lon columns) | geopandas + shapely | 📋 / 🗺️📋 |
+| **GeoTIFF → COG** | optimize raster for cloud tile streaming | rio-cogeo | ⬇️ |
+| **Raster → GeoJSON** | vectorize pixels into polygons | rasterio `shapes` | 🗺️📋 |
+| **GeoJSON → Raster** | burn shapes into a pixel grid (ML masks) | rasterio `rasterize` | ⬇️ |
+| **Reprojection (EPSG)** | change coordinate system (e.g. WGS84→Web Mercator) | pyproj / rasterio warp | 🗺️📋 or ⬇️ |
+
+### 🎁 Bonus (secondary)
+
+| Conversion | Note |
+|---|---|
+| **GeoJSON ↔ Shapefile** | zipped `.shp/.shx/.dbf/.prj/.cpg` |
+| **GeoJSON ↔ GeoPackage** | single-file spatial DB · lossless |
+| **GeoJSON ↔ KML/KMZ** | Google Earth format |
+| **Multi-band → COGs** | split e.g. RGB/NIR into one COG per band (zip) |
+| **GeoJSON ↔ COCO JSON** | bridge GIS polygons ⇄ ML annotations |
+
+> 💡 **Lossless vs lossy:** GeoPackage/Shapefile/KML round-trips keep everything. Anything
+> through **Raster** (rasterize/vectorize) is lossy by nature — attributes drop and edges
+> pixelate. **COCO** keeps geometry but flattens to the ML schema (no GIS attributes).
+
+---
+
+## ✨ Features
+
+**Mandatory**
+- 📤 Drag-and-drop upload with type/size feedback
+- ⚙️ Config panel — conversion picker, EPSG dropdown, resolution/band
+- 📊 Live progress bar + status (`pending → processing → completed / failed`)
+- ⬇️ Result card — download button, filename, size
+- ⚠️ Clear, friendly error messages
+
+**Bonus (all built except user auth)**
+- 🗺️ **Map preview** (Leaflet) for GeoJSON output
+- 📋 **Attribute table** preview (GeoJSON props / CSV rows)
+- 📦 **Batch upload** — many files at once, one progress row each
+- 🎛️ **Advanced GDAL params** — compression, NoData, tile block size
+- 🕑 **History panel** — re-download or delete past tasks
+- 🔔 Toasts + a live terminal-style activity log
+
+> **Not built (optional):** user management (login/API keys) and an in-browser COG tile
+> server. Raster/COG outputs are downloaded, not tiled on the map.
+
+---
+
+## 🧱 Tech stack
+
+```
+FRONTEND   Next.js 16 · React 19 · Tailwind v4 · shadcn/ui
+           TanStack Query (polling) · Zustand · react-hot-toast
+           Leaflet (map) · PapaParse (CSV)
+
+BACKEND    FastAPI + Pydantic v2 · Celery + Redis (async jobs)
+           GDAL stack → rasterio · rio-cogeo · geopandas · shapely · pyproj · fiona
+
+DATA       Postgres + PostGIS (tasks)  ·  MinIO (files)
+
+DEVOPS     docker-compose (7 services) — also solves GDAL-on-Windows pain
+```
+
+> 💯 **100% free & open-source.** Everything runs locally in Docker — no cloud, no paid keys.
+
+---
+
+## 🔌 API examples (curl)
+
+A ready-made **Postman collection** is at [`postman_collection.json`](postman_collection.json)
+(import it, set `base_url`, run any *Upload* — it auto-saves the `task_id`).
 
 ```bash
-# Health check
+# health check
 curl http://localhost:8000/health
 
-# Upload + convert: GeoJSON -> CSV
+# upload + convert  (returns { "task_id": "…", "status": "pending" })
 curl -X POST http://localhost:8000/api/upload \
-  -F "file=@data/World Countries Boundary/us-states.geojson" \
-  -F "conversion=geojson_to_csv"
-# -> {"task_id": "…", "status": "pending"}
+  -F 'file=@test cases/geojson_to_csv/regions.geojson' \
+  -F 'conversion=geojson_to_csv'
 
-# Upload + convert: GeoTIFF -> COG, with advanced GDAL params
+# GeoTIFF → COG with advanced GDAL params
 curl -X POST http://localhost:8000/api/upload \
-  -F "file=@data/OSGeo GeoTIFF Samples/cea.tif" \
-  -F "conversion=geotiff_to_cog" \
-  -F "compression=lzw" \
-  -F "nodata=0" \
-  -F "blocksize=256"
+  -F 'file=@test cases/geotiff_to_cog/elevation.tif' \
+  -F 'conversion=geotiff_to_cog' -F 'compression=lzw' -F 'nodata=0' -F 'blocksize=256'
 
-# Upload + convert: reprojection to a target EPSG
+# reproject to Web Mercator
 curl -X POST http://localhost:8000/api/upload \
-  -F "file=@data/World Countries Boundary/us-states.geojson" \
-  -F "conversion=reproject" \
-  -F "target_epsg=3857"
+  -F 'file=@test cases/reproject/regions.geojson' \
+  -F 'conversion=reproject' -F 'target_epsg=3857'
 
-# List conversion history
-curl http://localhost:8000/api/tasks
-
-# Poll task status (replace TASK_ID with the id returned from /api/upload)
+# poll · result · download   (swap TASK_ID for the id above)
 curl http://localhost:8000/api/tasks/TASK_ID
-
-# Get result metadata (output filename/size + download URL once completed)
 curl http://localhost:8000/api/tasks/TASK_ID/result
-
-# Download the converted file
 curl -OJ http://localhost:8000/api/download/TASK_ID
 
-# Delete one task (also removes its files from MinIO)
+# history · delete one · clear all
+curl http://localhost:8000/api/tasks
 curl -X DELETE http://localhost:8000/api/tasks/TASK_ID
-
-# Clear all history
 curl -X DELETE http://localhost:8000/api/tasks
 ```
 
-> **Tip:** the `data/` paths above are git-ignored. For a guaranteed-present input,
-> point `file=@` at any sample under [`test cases/`](test%20cases/) instead, e.g.
-> `-F 'file=@test cases/geojson_to_csv/regions.geojson'`.
-
-### API documentation (OpenAPI / Swagger)
-
-- **Interactive Swagger UI:** <http://localhost:8000/docs> - try every endpoint in the
-  browser, with request/response schemas for all conversion types.
-- **ReDoc:** <http://localhost:8000/redoc>
-- **Machine-readable spec:** <http://localhost:8000/openapi.json> (live) - a snapshot is
-  also committed at [`docs/openapi.json`](docs/openapi.json) so the spec can be viewed,
-  diffed, or imported without the stack running.
+**Interactive docs:** Swagger <http://localhost:8000/docs> · ReDoc <http://localhost:8000/redoc>
+· spec `/openapi.json` (committed snapshot at [`docs/openapi.json`](docs/openapi.json)).
 
 ---
 
-## 7. Sample Datasets & Test Cases
+## 🐳 Common commands
 
-There are two sets of sample inputs:
-
-### `test cases/` (committed, one per conversion)
-
-Small, self-contained inputs for **every** conversion, each verified end-to-end against
-the real engine. This is the fastest way to exercise the API. See
-[`test cases/README.md`](test%20cases/README.md) for a per-conversion table and
-copy-paste curl/Postman commands.
-
-```text
-test cases/<conversion>/<sample file>
-  e.g.  test cases/geojson_to_csv/regions.geojson
-        test cases/geotiff_to_cog/elevation.tif
+```bash
+docker compose up -d               # start everything (background)
+docker compose ps                  # list services + health
+docker compose logs -f backend     # tail one service
+docker compose restart worker      # ⚠️ needed after editing conversion code
+docker compose restart frontend    # if a UI change doesn't hot-reload (Windows)
+docker compose down                # stop (keeps data)
+docker compose down -v             # stop + wipe db/files
 ```
 
-### `data/` (real-world datasets, git-ignored)
+> 🪤 **Reload gotcha:** backend auto-reloads; the **worker never does** (restart it after
+> touching `app/conversions/`); the frontend *usually* hot-reloads but can miss changes on
+> Windows bind mounts — restart it if so.
 
-The larger, real datasets named in the project PDF. See [dataset.md](dataset.md) for a
-deep-dive on each (source URLs + re-download commands). Actual contents:
+---
 
-| Type | Files (under `data/`) |
-|------|-----------------------|
-| **Vector (GeoJSON)** | `World Countries Boundary/us-states.geojson`, `GADM Global Administrative Areas/GeoJSON/gadm41_USA_{0,1,2}.json` |
-| **Raster (OSGeo samples)** | `OSGeo GeoTIFF Samples/{cea,rgb_byte,usgs_ortho}.tif` |
+## 📂 Sample data
+
+Two sets of inputs:
+
+**`test cases/`** — committed, one small sample per conversion. Fastest way to test; always
+present. See [`test cases/README.md`](test%20cases/README.md).
+```
+test cases/geojson_to_csv/regions.geojson
+test cases/geotiff_to_cog/elevation.tif
+test cases/multiband_to_cogs/rgb.tif   … etc.
+```
+
+**`data/`** — the larger real-world datasets from the project PDF *(git-ignored,
+re-downloadable; documented in [dataset.md](dataset.md))*:
+
+| Type | Files under `data/` |
+|------|---------------------|
+| **Vector** | `World Countries Boundary/us-states.geojson`, `GADM…/GeoJSON/gadm41_USA_{0,1,2}.json` |
+| **Raster (OSGeo)** | `OSGeo GeoTIFF Samples/{cea,rgb_byte,usgs_ortho}.tif` |
 | **Raster (benchmark)** | `GeoTIFF Benchmark Files/{byte,int16,float32}_50m.tif` |
-| **Bonus formats (GADM)** | `.../Geopackage/gadm41_USA.gpkg`, `.../Shapefile/gadm41_USA_*.{shp,zip}`, `.../KMZ/gadm41_USA_*.kmz` |
+| **Bonus formats (GADM)** | `.gpkg`, `Shapefile/*.{shp,zip}`, `KMZ/*.kmz` |
 
-> `data/` is **gitignored** (large and re-downloadable); the tracked
-> [dataset.md](dataset.md) documents where each file comes from so a fresh clone can
-> regenerate it. The `test cases/` samples are committed, so they always work out of the box.
+---
+
+## 📚 Glossary
+
+| Term | In one line |
+|------|-------------|
+| **GIS** | Software for storing, analyzing & mapping spatial data. |
+| **Vector** | The world as *shapes* — points, lines, polygons + attributes (GeoJSON, Shapefile…). |
+| **Raster** | The world as a *pixel grid* — each cell holds a value (GeoTIFF, COG). |
+| **GeoJSON** | Text (JSON) format for vector features. The web standard. |
+| **GeoTIFF** | A TIFF image with embedded map coordinates. |
+| **COG** | Cloud-Optimized GeoTIFF — internally tiled so the web streams pieces, not the whole file. |
+| **EPSG** | A numeric code for a coordinate system (e.g. `4326`=WGS84, `3857`=Web Mercator). |
+| **GDAL** | The core C/C++ engine that reads/writes 200+ geo formats; every Python lib below wraps it. |
+| **rasterio / rio-cogeo** | Read/process rasters · make & validate COGs. |
+| **geopandas / shapely / fiona** | Vector data as DataFrames · geometry ops · read/write vector files. |
+| **pyproj** | Reproject between coordinate systems. |
+| **PostGIS** | Postgres extension adding spatial types & queries. |
+
+---
+
+## 📖 More docs
+
+- [steps.md](steps.md) — full requirements checklist (mandatory + bonus, what's done)
+- [dataset.md](dataset.md) — where each real dataset comes from + re-download commands
+- [`test cases/README.md`](test%20cases/README.md) — per-conversion sample + curl commands
