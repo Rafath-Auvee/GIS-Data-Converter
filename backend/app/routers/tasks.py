@@ -29,6 +29,8 @@ def _to_task(rec: TaskRecord) -> Task:
     response_model=list[Task],
     summary="List recent tasks (conversion history)",
 )
+
+
 def list_tasks(db: Session = Depends(get_db), limit: int = 100):
     recs = (
         db.query(TaskRecord)
@@ -45,6 +47,8 @@ def list_tasks(db: Session = Depends(get_db), limit: int = 100):
     summary="Get task status",
     responses={404: {"description": "Task not found."}},
 )
+
+
 def get_task(task_id: str, db: Session = Depends(get_db)):
     rec = db.get(TaskRecord, task_id)
     if rec is None:
@@ -58,6 +62,8 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
     summary="Get task result metadata",
     responses={404: {"description": "Task not found."}},
 )
+
+
 def get_task_result(task_id: str, db: Session = Depends(get_db)):
     rec = db.get(TaskRecord, task_id)
     if rec is None:
@@ -96,6 +102,8 @@ def clear_tasks(db: Session = Depends(get_db)):
     summary="Delete one task",
     responses={404: {"description": "Task not found."}},
 )
+
+
 def delete_task(task_id: str, db: Session = Depends(get_db)):
     rec = db.get(TaskRecord, task_id)
     if rec is None:
