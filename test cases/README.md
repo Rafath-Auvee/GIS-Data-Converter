@@ -8,23 +8,31 @@ conversion engine (all 16 produce valid, non-empty output).
 Layout: one folder per conversion, named exactly like the `conversion` form field
 the API expects, with the input file(s) inside.
 
-| Folder (`conversion` value) | Sample file | What it demonstrates |
-|---|---|---|
-| `geojson_to_csv` | `regions.geojson` | 2 polygons + attributes → CSV (properties + `geometry_wkt`) |
-| `csv_to_geojson` | `cities.csv` | Point table with `longitude`/`latitude` columns → GeoJSON |
-| `geotiff_to_cog` | `elevation.tif` | Single-band float32 GeoTIFF → Cloud-Optimized GeoTIFF |
-| `raster_to_geojson` | `landcover_mask.tif` | Classified uint8 mask (2 blocks) → polygonized features |
-| `geojson_to_raster` | `regions.geojson` | Vector polygons → burned into a uint8 raster grid |
-| `reproject` | `regions.geojson`, `elevation.tif` | Vector **and** raster reprojection (WGS84 → target EPSG) |
-| `geojson_to_shapefile` | `regions.geojson` | GeoJSON → zipped ESRI Shapefile |
-| `shapefile_to_geojson` | `regions_shapefile.zip` | Zipped Shapefile → GeoJSON |
-| `geojson_to_gpkg` | `regions.geojson` | GeoJSON → GeoPackage (`.gpkg`) |
-| `gpkg_to_geojson` | `regions.gpkg` | GeoPackage → GeoJSON |
-| `geojson_to_kml` | `regions.geojson` | GeoJSON → KML (Google Earth) |
-| `kml_to_geojson` | `regions.kml` | KML → GeoJSON (`.kmz` also accepted) |
-| `multiband_to_cogs` | `rgb.tif` | 3-band GeoTIFF → one single-band COG per band (zipped) |
-| `geojson_to_coco` | `regions.geojson` | GeoJSON polygons → COCO annotation JSON |
-| `coco_to_geojson` | `regions_coco.json` | COCO annotations → GeoJSON |
+Columns: the `conversion` form value (= folder name), the sample file to upload, the
+optional parameters that conversion accepts (with defaults), and the output filename.
+
+| Folder (`conversion` value) | Sample file | Parameters (default) | Output |
+|---|---|---|---|
+| `geojson_to_csv` | `regions.geojson` | — none — | `<name>.csv` |
+| `csv_to_geojson` | `cities.csv` | — none — (CSV needs `geometry_wkt` **or** `longitude`/`latitude` columns) | `<name>.geojson` |
+| `geotiff_to_cog` | `elevation.tif` | `compression` (`deflate`), `nodata`, `blocksize` (multiple of 16) | `<name>_cog.tif` |
+| `raster_to_geojson` | `landcover_mask.tif` | `band` (`1`) | `<name>.geojson` |
+| `geojson_to_raster` | `regions.geojson` | `resolution` (`0.05`), `nodata` (0–255), `compression` | `<name>_raster.tif` |
+| `reproject` | `regions.geojson`, `elevation.tif` | `target_epsg` (`3857`) — accepts vector **and** raster | `<name>_epsg<code>.geojson`/`.tif` |
+| `geojson_to_shapefile` | `regions.geojson` | — none — | `<name>_shapefile.zip` |
+| `shapefile_to_geojson` | `regions_shapefile.zip` | — none — | `<name>.geojson` |
+| `geojson_to_gpkg` | `regions.geojson` | — none — | `<name>.gpkg` |
+| `gpkg_to_geojson` | `regions.gpkg` | — none — | `<name>.geojson` |
+| `geojson_to_kml` | `regions.geojson` | — none — | `<name>.kml` |
+| `kml_to_geojson` | `regions.kml` | — none — (`.kmz` also accepted) | `<name>.geojson` |
+| `multiband_to_cogs` | `rgb.tif` | — none — | `<name>_bands.zip` |
+| `geojson_to_coco` | `regions.geojson` | — none — | `<name>_coco.json` |
+| `coco_to_geojson` | `regions_coco.json` | — none — | `<name>.geojson` |
+
+> **Which parameter goes where:** `target_epsg` → `reproject` only · `resolution` →
+> `geojson_to_raster` only · `band` → `raster_to_geojson` only · `compression`/`nodata`
+> → `geotiff_to_cog` and `geojson_to_raster` · `blocksize` → `geotiff_to_cog` only.
+> Any parameter that doesn't apply to the chosen conversion is ignored.
 
 All vector samples cover the same two small polygons (`Region A`, `Region B`) near
 10–11°E / 50°N so outputs are easy to eyeball; rasters share that footprint.
