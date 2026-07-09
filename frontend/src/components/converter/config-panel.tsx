@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { CONVERSIONS, type ConversionType } from "@/lib/api";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,15 @@ import {
 
 const COMPRESSIONS = ["deflate", "lzw", "zstd", "webp", "jpeg", "none"];
 const BLOCK_SIZES = [128, 256, 512, 1024];
+
+const EPSG_PRESETS = [
+  { value: 4326, label: "EPSG:4326 — WGS84 (lat/lon)" },
+  { value: 3857, label: "EPSG:3857 — Web Mercator" },
+  { value: 32646, label: "EPSG:32646 — UTM 46N (Bangladesh)" },
+  { value: 5070, label: "EPSG:5070 — NAD83 / US Albers" },
+  { value: 4269, label: "EPSG:4269 — NAD83 (lat/lon)" },
+];
+const EPSG_PRESET_VALUES = EPSG_PRESETS.map((p) => p.value);
 
 export function ConfigPanel({
   conversion,
@@ -53,6 +63,18 @@ export function ConfigPanel({
   const isCog = conversion === "geotiff_to_cog";
   const showAdvanced = isCog || isRasterize;
 
+  const [epsgMode, setEpsgMode] = React.useState(
+    targetEpsg != null && EPSG_PRESET_VALUES.includes(targetEpsg)
+      ? String(targetEpsg)
+      : "custom",
+  );
+
+  function handleEpsgSelect(v: string | null) {
+    if (!v) return;
+    setEpsgMode(v);
+    if (v !== "custom") onEpsg(Number(v));
+  }
+
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="flex flex-col gap-1.5 sm:col-span-2">
@@ -76,17 +98,31 @@ export function ConfigPanel({
       </div>
 
       {isReproject && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="epsg">Target EPSG code</Label>
-          <Input
-            id="epsg"
-            type="number"
-            inputMode="numeric"
-            placeholder="e.g. 3857"
-            value={targetEpsg ?? ""}
-            disabled={disabled}
-            onChange={(e) => onEpsg(e.target.value ? Number(e.target.value) : null)}
-          />
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <Label htmlFor="epsg">Target coordinate system (EPSG)</Label>
+          <Select value={epsgMode} onValueChange={handleEpsgSelect} disabled={disabled}>
+            <SelectTrigger id="epsg" className="w-full">
+              <SelectValue placeholder="Select target EPSG" />
+            </SelectTrigger>
+            <SelectContent>
+              {EPSG_PRESETS.map((p) => (
+                <SelectItem key={p.value} value={String(p.value)}>
+                  {p.label}
+                </SelectItem>
+              ))}
+              <SelectItem value="custom">Custom EPSG code…</SelectItem>
+            </SelectContent>
+          </Select>
+          {epsgMode === "custom" && (
+            <Input
+              type="number"
+              inputMode="numeric"
+              placeholder="Enter any EPSG code, e.g. 32633"
+              value={targetEpsg ?? ""}
+              disabled={disabled}
+              onChange={(e) => onEpsg(e.target.value ? Number(e.target.value) : null)}
+            />
+          )}
         </div>
       )}
 
